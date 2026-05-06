@@ -7,7 +7,7 @@ scenes = {
     },
     {
         name = "level_01",
-        path = "./assets/scripts/scene_01.lua"
+        path = "./assets/scripts/scene_level_01.lua"
     },
     {
         name = "level_02",

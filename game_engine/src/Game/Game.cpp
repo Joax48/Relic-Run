@@ -179,7 +179,7 @@ void Game::Update() {
 
     registry->Update();
 
-    registry->GetSystem<ScriptSystem>().Update(lua);
+    registry->GetSystem<ScriptSystem>().Update(lua, dt);
 
     registry->GetSystem<PhysicsSystem>().Update();
     registry->GetSystem<MovementSystem>().Update(dt);    

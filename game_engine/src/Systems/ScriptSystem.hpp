@@ -34,20 +34,26 @@ public:
         lua.set_function("go_to_scene", GoToScene);
 
         lua.set_function("left_collision", LeftCollision);
-        lua.set_function("right_collision", RightCollision);     
+        lua.set_function("right_collision", RightCollision);
+        lua.set_function("up_collision", UpCollision);
+        lua.set_function("down_collision", DownCollision);
+
+        lua.set_function("spawn_projectile", SpawnProjectile);
+        lua.set_function("spawn_melee", SpawnMelee);
+        lua.set_function("kill_entity", KillEntity);
 
     }
 
-    void Update(sol::state& lua) {
+    void Update(sol::state& lua, double dt) {
         for (auto entity : GetSystemEntities()) {
             const auto& script = entity.GetComponent<ScriptComponent>();
-            
+
             if (script.update != sol::lua_nil) {
                 lua["this"] = entity;
-                script.update();
+                script.update(dt);
             }
         }
-    }   
+    }
 };
 
 
