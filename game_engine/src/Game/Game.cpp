@@ -95,6 +95,8 @@ void Game::Init() {
     camera.h = windowHeight;
 
     isRunning = true;
+
+    pauseFont = TTF_OpenFont("./assets/fonts/PressStart.ttf", 32);
 }
 
 void Game::SetUp() {
@@ -129,8 +131,10 @@ void Game::ProcessInput() {
                 break;
             case SDL_KEYDOWN:
                 if (sdlEvent.key.keysym.sym == SDLK_ESCAPE) {
-                    sceneManager->StopScene();
-                    isRunning = false;
+                    isPaused = !isPaused;
+                    if (!isPaused) {
+                        milisPreviousFrame = SDL_GetTicks();
+                    }
                     break;
                 }
                 controllerManager->KeyDown(sdlEvent.key.keysym.sym);
@@ -167,7 +171,8 @@ void Game::Update() {
     }
 
     double dt = (SDL_GetTicks() - milisPreviousFrame) / 1000.0;
-    
+    if (dt > 0.05) dt = 0.05;   // cap 50ms — evita spike al despausar
+
     milisPreviousFrame = SDL_GetTicks();
 
     // Reiniciar las subscripciones a eventos para evitar que se acumulen
@@ -194,8 +199,39 @@ void Game::Render() {
     SDL_SetRenderDrawColor(renderer, 31, 31, 31, 255);
     SDL_RenderClear(renderer);
 
-    registry->GetSystem<RenderSystem>().Update(renderer,camera, assetManager);
+    registry->GetSystem<RenderSystem>().Update(renderer, camera, assetManager);
     registry->GetSystem<RenderTextSystem>().Update(renderer, assetManager);
+
+    bool timeSlow = lua["time_slow"].get_or(false);
+    if (timeSlow) {
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(renderer, 0, 80, 220, 55);
+        SDL_Rect overlay = {0, 0, windowWidth, windowHeight};
+        SDL_RenderFillRect(renderer, &overlay);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    }
+
+    if (isPaused && pauseFont) {
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 160);
+        SDL_Rect overlay = {0, 0, windowWidth, windowHeight};
+        SDL_RenderFillRect(renderer, &overlay);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface* surf = TTF_RenderText_Solid(pauseFont, "PAUSA", white);
+        if (surf) {
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_Rect dst = {
+                (windowWidth  - surf->w) / 2,
+                (windowHeight - surf->h) / 2,
+                surf->w, surf->h
+            };
+            SDL_FreeSurface(surf);
+            SDL_RenderCopy(renderer, tex, nullptr, &dst);
+            SDL_DestroyTexture(tex);
+        }
+    }
 
     SDL_RenderPresent(renderer);
 }
@@ -204,9 +240,12 @@ void Game::RunScene() {
     sceneManager->LoadScene();
     while (sceneManager->IsSceneRunning()){
         ProcessInput();
-        Update();
+        if (!isPaused) {
+            Update();
+        }
         Render();
     }
+    isPaused = false;
     assetManager->ClearAssets();
     registry->ClearAllEntities();
 }
@@ -222,6 +261,7 @@ void Game::Run() {
 
 // Destructor de objetos en juego
 void Game::Destroy() {
+    if (pauseFont) TTF_CloseFont(pauseFont);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();

@@ -27,6 +27,9 @@ class Game {
         int milisPreviousFrame = 0;
 
         bool isRunning = false;
+        bool isPaused  = false;
+
+        TTF_Font* pauseFont = nullptr;
 
     public:
         SDL_Renderer* renderer = nullptr;

@@ -9,6 +9,7 @@ struct SpriteComponent{
     int width;
     int height;
     SDL_Rect srcRect;
+    Uint8 alpha = 255;
 
     SpriteComponent(const std::string& textureId = "none", int width = 0
         , int height = 0, int srcRectX = 0, int srcRectY = 0 ) {

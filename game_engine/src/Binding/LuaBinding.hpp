@@ -229,4 +229,18 @@ void KillEntity(Entity entity) {
     Game::GetInstance().registry->KillEntity(entity);
 }
 
+//* HUD
+
+void SetText(Entity entity, const std::string& text) {
+    entity.GetComponent<TextComponent>().text = text;
+}
+
+void SetSprite(Entity entity, const std::string& assetId) {
+    entity.GetComponent<SpriteComponent>().textureId = assetId;
+}
+
+void SetAlpha(Entity entity, int alpha) {
+    entity.GetComponent<SpriteComponent>().alpha = static_cast<Uint8>(alpha);
+}
+
 #endif // LUA_BINDING_HPP

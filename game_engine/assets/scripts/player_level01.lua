@@ -16,12 +16,120 @@ local MELEE_DURATION = 0.15
 local shoot_cooldown = 0.0
 local SHOOT_COOLDOWN = 0.35
 
+-- HP e invencibilidad
+local INVINCIBLE_DURATION = 1.5
+
+-- Capa de invisibilidad
+local CLOAK_DURATION = 5.0
+local CLOAK_COOLDOWN = 10.0
+
+-- Orbe señuelo
+local DECOY_DURATION = 8.0
+local DECOY_COOLDOWN = 12.0
+
+-- Pergamino temporal
+local TIMESLOW_DURATION = 5.0
+local TIMESLOW_COOLDOWN = 15.0
+
 function on_awake()
+    player_hp               = 3
+    player_invincible       = false
+    player_invincible_timer = 0.0
+    player_invisible        = false
+    player_invisible_timer  = 0.0
+    decoy_active            = false
+    decoy_timer             = 0.0
+    decoy_x                 = 0
+    decoy_y                 = 0
+    time_slow               = false
+    timeslow_timer          = 0.0
 end
 
 function update(dt)
+    -- exponer posición para la IA de enemigos
+    player_x, player_y = get_position(this)
+
     -- timers
     if shoot_cooldown > 0 then shoot_cooldown = shoot_cooldown - dt end
+
+    if player_invincible then
+        player_invincible_timer = player_invincible_timer - dt
+        if player_invincible_timer <= 0 then
+            player_invincible = false
+        end
+    end
+
+    -- cooldown de la capa
+    if cloak_cooldown and cloak_cooldown > 0 then
+        cloak_cooldown = cloak_cooldown - dt
+        if cloak_cooldown < 0 then cloak_cooldown = 0 end
+    end
+
+    -- efecto activo de la capa
+    if player_invisible then
+        player_invisible_timer = player_invisible_timer - dt
+        set_alpha(this, 80)
+        if player_invisible_timer <= 0 then
+            player_invisible       = false
+            player_invisible_timer = 0.0
+            cloak_cooldown         = CLOAK_COOLDOWN
+            set_alpha(this, 255)
+        end
+    end
+
+    -- activar capa con tecla 1
+    if is_action_activated("USE_SLOT1") and has_cloak
+       and not player_invisible and cloak_cooldown <= 0 then
+        player_invisible       = true
+        player_invisible_timer = CLOAK_DURATION
+    end
+
+    -- señuelo: timer activo
+    if decoy_active then
+        decoy_timer = decoy_timer - dt
+        if decoy_timer <= 0 then
+            decoy_active   = false
+            decoy_timer    = 0.0
+            decoy_cooldown = DECOY_COOLDOWN
+        end
+    end
+
+    -- cooldown del señuelo
+    if decoy_cooldown and decoy_cooldown > 0 then
+        decoy_cooldown = decoy_cooldown - dt
+        if decoy_cooldown < 0 then decoy_cooldown = 0 end
+    end
+
+    -- activar señuelo con tecla 2 (suelta el señuelo en la posición actual)
+    if is_action_activated("USE_SLOT2") and has_decoy
+       and not decoy_active and decoy_cooldown <= 0 then
+        decoy_active = true
+        decoy_timer  = DECOY_DURATION
+        decoy_x, decoy_y = get_position(this)
+    end
+
+    -- tiempo lento: timer activo
+    if time_slow then
+        timeslow_timer = timeslow_timer - dt
+        if timeslow_timer <= 0 then
+            time_slow        = false
+            timeslow_timer   = 0.0
+            timeslow_cooldown = TIMESLOW_COOLDOWN
+        end
+    end
+
+    -- cooldown del pergamino
+    if timeslow_cooldown and timeslow_cooldown > 0 then
+        timeslow_cooldown = timeslow_cooldown - dt
+        if timeslow_cooldown < 0 then timeslow_cooldown = 0 end
+    end
+
+    -- activar pergamino con tecla 3
+    if is_action_activated("USE_SLOT3") and has_timeslow
+       and not time_slow and timeslow_cooldown <= 0 then
+        time_slow      = true
+        timeslow_timer = TIMESLOW_DURATION
+    end
 
     if melee_active then
         melee_timer = melee_timer - dt
@@ -80,8 +188,12 @@ function update(dt)
     if is_action_activated("SHOOT") and shoot_cooldown <= 0 then
         local px, py = get_position(this)
         local pw, ph = get_size(this)
-        local sx = px + pw / 2 - 8   -- centrado en el jugador
-        local sy = py + ph / 2 - 8
+        -- spawn fuera del collider del jugador en la dirección de disparo
+        local cx = px + pw / 2
+        local cy = py + ph / 2
+        local offset = pw / 2 + 10
+        local sx = cx + facing_x * offset - 8
+        local sy = cy + facing_y * offset - 8
         spawn_projectile(sx, sy, facing_x * PROJ_SPEED, facing_y * PROJ_SPEED)
         shoot_cooldown = SHOOT_COOLDOWN
     end
@@ -108,6 +220,20 @@ function on_collision(other)
         elseif up_collision(this, other) then
             set_velocity(this, cvx, 0)
             set_position(this, px, oy + oh)
+        end
+        return
+    end
+
+    -- daño al jugador por enemigos o proyectiles enemigos
+    if not player_invincible then
+        if tag == "projectile" or tag == "skeleton_base" or
+           tag == "skeleton_mage" or tag == "mimic" then
+            player_hp = player_hp - 1
+            player_invincible = true
+            player_invincible_timer = INVINCIBLE_DURATION
+            if player_hp <= 0 then
+                go_to_scene("main_menu")
+            end
         end
     end
 end

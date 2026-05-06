@@ -42,6 +42,10 @@ public:
         lua.set_function("spawn_melee", SpawnMelee);
         lua.set_function("kill_entity", KillEntity);
 
+        lua.set_function("set_text", SetText);
+        lua.set_function("set_sprite", SetSprite);
+        lua.set_function("set_alpha", SetAlpha);
+
     }
 
     void Update(sol::state& lua, double dt) {

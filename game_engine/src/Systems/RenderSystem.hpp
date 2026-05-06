@@ -30,15 +30,18 @@ class RenderSystem: public System {
                         static_cast<int>(sprite.height * transform.scale.y)
                     };
 
+                    SDL_Texture* tex = AssetManager->GetTexture(sprite.textureId);
+                    SDL_SetTextureAlphaMod(tex, sprite.alpha);
                     SDL_RenderCopyEx(
                         renderer,
-                        AssetManager->GetTexture(sprite.textureId),
+                        tex,
                         &srcRect,
                         &dstRect,
                         transform.rotation,
                         NULL,
                         SDL_FLIP_NONE
                     );
+                    SDL_SetTextureAlphaMod(tex, 255);
                 }
         }
 };
