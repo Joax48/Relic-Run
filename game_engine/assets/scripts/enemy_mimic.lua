@@ -3,53 +3,72 @@ local hp     = HP
 local POINTS = 50
 
 local CHASE_SPEED  = 90
-local DETECT_RANGE = 120   -- rango en que "revela" y persigue
+local DETECT_RANGE = 120
 
 local dead     = false
-local revealed = false     -- false = disfrazado de reliquia, true = enemigo activo
+local dying    = false
+local revealed = false
+
+local ANIM_DEATH_DUR = 10 / 6.0
+local anim_lock_timer = 0.0
+
+local function reveal()
+    revealed = true
+    set_sprite(this, "slime-idle")
+    set_sprite_size(this, 64, 64)
+    set_box_collider(this, 96, 96)
+    play_animation(this, "slime-idle", 6, 6)
+end
 
 function on_awake()
 end
 
 function update(dt)
+    -- siempre corre el timer (para muerte)
+    if anim_lock_timer > 0 then
+        anim_lock_timer = anim_lock_timer - dt
+        if anim_lock_timer < 0 then anim_lock_timer = 0 end
+    end
+
+    if dying then
+        set_velocity(this, 0, 0)
+        if anim_lock_timer <= 0 then
+            kill_entity(this)
+        end
+        return
+    end
+
     if dead then return end
 
     if not revealed then
-        -- quieto, esperando al jugador
         set_velocity(this, 0, 0)
-
-        if player_x and player_y then
+        if player_cx and player_cy then
             local sx, sy = get_position(this)
-            local dx = player_x - sx
-            local dy = player_y - sy
-            local dist = math.sqrt(dx * dx + dy * dy)
-            if dist < DETECT_RANGE then
-                revealed = true
-                -- cambiar sprite a skeleton para que sea reconocible como enemigo
-                set_sprite(this, "skeleton-base")
+            local dx = player_cx - sx
+            local dy = player_cy - sy
+            if math.sqrt(dx*dx + dy*dy) < DETECT_RANGE then
+                reveal()
             end
         end
         return
     end
 
-    -- perseguir al jugador (o señuelo si está activo)
-    local target_x, target_y
+    -- perseguir al jugador (o señuelo)
+    local tx, ty
     if decoy_active and decoy_x and decoy_y then
-        target_x, target_y = decoy_x, decoy_y
-    elseif player_x and player_y then
-        target_x, target_y = player_x, player_y
+        tx, ty = decoy_x, decoy_y
+    elseif player_cx and player_cy then
+        tx, ty = player_cx, player_cy
     end
 
-    if target_x then
+    if tx then
         local sx, sy = get_position(this)
-        local dx = target_x - sx
-        local dy = target_y - sy
-        local dist = math.sqrt(dx * dx + dy * dy)
+        local dx = tx - sx
+        local dy = ty - sy
+        local dist = math.sqrt(dx*dx + dy*dy)
         local mult = (time_slow and 0.2) or 1.0
         if dist > 4 then
-            local nx = dx / dist
-            local ny = dy / dist
-            set_velocity(this, nx * CHASE_SPEED * mult, ny * CHASE_SPEED * mult)
+            set_velocity(this, dx/dist * CHASE_SPEED * mult, dy/dist * CHASE_SPEED * mult)
         else
             set_velocity(this, 0, 0)
         end
@@ -57,7 +76,7 @@ function update(dt)
 end
 
 function on_collision(other)
-    if dead then return end
+    if dying or dead then return end
 
     local tag = get_tag(other)
 
@@ -66,7 +85,6 @@ function on_collision(other)
         local sw, sh = get_size(this)
         local ox, oy = get_position(other)
         local ow, oh = get_size(other)
-
         if right_collision(this, other) then
             set_position(this, ox - sw, sy)
         elseif left_collision(this, other) then
@@ -81,16 +99,15 @@ function on_collision(other)
     end
 
     if tag == "projectile" or tag == "player_melee" then
-        -- solo toma daño si ya está revelado (o al primer hit lo revela)
-        if not revealed then
-            revealed = true
-            set_sprite(this, "skeleton-base")
-        end
+        if not revealed then reveal() end
         hp = hp - 1
         if hp <= 0 then
             dead  = true
+            dying = true
             score = score + POINTS
-            kill_entity(this)
+            play_animation(this, "slime-death", 10, 6)
+            set_sprite_row(this, 0)
+            anim_lock_timer = ANIM_DEATH_DUR
         end
     end
 end

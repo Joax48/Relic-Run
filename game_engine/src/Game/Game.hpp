@@ -15,7 +15,7 @@
 #include "../ECS/ECS.hpp"
 #include "../SceneManager/SceneManager.hpp"
 
-const int FPS = 30;
+const int FPS = 60;
 const int FRAME_DELAY = 1000 / FPS;
 
 class Game {
@@ -26,8 +26,9 @@ class Game {
 
         int milisPreviousFrame = 0;
 
-        bool isRunning = false;
-        bool isPaused  = false;
+        bool isRunning      = false;
+        bool isPaused       = false;
+        bool showColliders  = false;
 
         TTF_Font* pauseFont = nullptr;
 

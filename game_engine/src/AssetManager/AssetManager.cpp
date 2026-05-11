@@ -31,6 +31,10 @@ void AssetManager::AddTexture(SDL_Renderer* renderer
     textures.emplace(textureId, texture);
 }
 
+void AssetManager::AddTextureRaw(const std::string& textureId, SDL_Texture* texture) {
+    textures.emplace(textureId, texture);
+}
+
 SDL_Texture* AssetManager::GetTexture(const std::string& textureId) {
     return textures[textureId];
 }

@@ -21,7 +21,9 @@ class AssetManager {
 
     void AddTexture(SDL_Renderer* renderer, const std::string& textureId
     , const std::string& filePath);
-    
+
+    void AddTextureRaw(const std::string& textureId, SDL_Texture* texture);
+
     SDL_Texture* GetTexture(const std::string& textureId);
 
     void AddFont(const std::string& fontId, const std::string& filePath, int fontSize);

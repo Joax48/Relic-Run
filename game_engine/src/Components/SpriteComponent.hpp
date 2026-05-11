@@ -10,6 +10,7 @@ struct SpriteComponent{
     int height;
     SDL_Rect srcRect;
     Uint8 alpha = 255;
+    int zIndex = 1;  // 0=fondo, 1=entidades (default), 2=techo/árboles
 
     SpriteComponent(const std::string& textureId = "none", int width = 0
         , int height = 0, int srcRectX = 0, int srcRectY = 0 ) {

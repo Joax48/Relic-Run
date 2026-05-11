@@ -6,7 +6,7 @@ end
 
 function on_collision(other)
     local tag = get_tag(other)
-    if tag ~= "player" and tag ~= "projectile" and tag ~= "player_melee" then
+    if tag ~= "player" and tag ~= "projectile" and tag ~= "player_melee" and tag ~= "enemy_projectile" then
         kill_entity(this)
     end
 end

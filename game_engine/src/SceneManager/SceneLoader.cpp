@@ -2,6 +2,7 @@
 
 #include "../Components/AnimationComponent.hpp"
 #include "../Components/CircleColliderComponent.hpp"
+#include "../Components/HealthBarComponent.hpp"
 #include "../Components/TransformComponent.hpp"
 #include "../Components/SpriteComponent.hpp"
 #include "../Components/RigidBodyComponent.hpp"
@@ -200,6 +201,18 @@ void SceneLoader::LoadEntities(sol::state& lua, const sol::table& entities, std:
                     components["sprite"]["src_rect"]["x"],
                     components["sprite"]["src_rect"]["y"]
                 );
+                {
+                    sol::table st = components["sprite"];
+                    newEntity.GetComponent<SpriteComponent>().zIndex = st.get_or("z_index", 1);
+                }
+            }
+
+            //* HealthBarComponent
+            sol::optional<sol::table> hasHealthBar = components["health_bar"];
+            if (hasHealthBar != sol::nullopt) {
+                int hp    = components["health_bar"]["hp"];
+                int maxHp = components["health_bar"]["max_hp"];
+                newEntity.AddComponent<HealthBarComponent>(hp, maxHp);
             }
 
             //* TagComponent

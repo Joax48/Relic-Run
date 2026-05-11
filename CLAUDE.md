@@ -30,15 +30,38 @@ Creacion_Videojuegos/
 │   ├── makefile
 │   ├── assets/
 │   │   ├── fonts/PressStart.ttf
-│   │   ├── images/            ← sprites de prueba (se reemplazarán)
-│   │   └── scripts/           ← TODA la lógica del juego va aquí
-│   │       ├── scenes.lua         ← registro de escenas (cargado al inicio)
-│   │       ├── scene_menu.lua
-│   │       ├── scene_01.lua
-│   │       ├── scene_02.lua
-│   │       ├── player.lua / player_frog.lua
-│   │       ├── enemy_alan.lua
-│   │       ├── menu_button01.lua / menu_button02.lua
+│   │   ├── images/
+│   │   │   ├── slime/             ← sprites del slime (CraftPix) ✅
+│   │   │   ├── vampire/           ← sprites del vampiro (CraftPix) ✅
+│   │   │   ├── orc_warrior.png    ← sprite del orc (CraftPix) ✅
+│   │   │   ├── player.png         ← jugador PixelLab 272×272 ✅
+│   │   │   ├── background.png, barrier_gem.png  ← prueba
+│   │   │   ├── frog_*.png         ← prueba (ignorar)
+│   │   │   ├── Enemy_Alan.png, Player_Ship.png  ← prueba (ignorar)
+│   │   │   └── [goblin/, golem/]  ← pendiente de agregar
+│   │   └── scripts/
+│   │       ├── scenes.lua             ← registro de escenas
+│   │       ├── scene_menu.lua         ← menú principal
+│   │       ├── scene_level_01.lua     ← nivel 1 (mazmorra) ✅
+│   │       ├── scene_01.lua           ← prueba (ignorar)
+│   │       ├── scene_02.lua           ← prueba (ignorar)
+│   │       ├── player_level01.lua     ← jugador activo ✅
+│   │       ├── player.lua             ← prueba (ignorar)
+│   │       ├── player_frog.lua        ← prueba (ignorar)
+│   │       ├── projectile.lua         ← proyectil del jugador ✅
+│   │       ├── relic.lua              ← reliquia recolectable ✅
+│   │       ├── portal.lua             ← portal de salida ✅
+│   │       ├── hud.lua                ← score y HUD en pantalla ✅
+│   │       ├── powerup_cloak.lua      ← power-up invisibilidad ✅
+│   │       ├── powerup_decoy.lua      ← power-up señuelo ✅
+│   │       ├── powerup_timeslow.lua   ← power-up tiempo lento ✅
+│   │       ├── enemy_alan.lua         ← prueba (ignorar)
+│   │       ├── enemy_dragon.lua       ← dragón boss ✅
+│   │       ├── enemy_mimic.lua        ← mimic (cofre falso) ✅
+│   │       ├── enemy_skeleton_base.lua ← skeleton base ✅
+│   │       ├── enemy_skeleton_mage.lua ← skeleton mage ✅
+│   │       ├── menu_button01.lua      ← botón menú
+│   │       └── menu_button02.lua      ← botón menú
 │   ├── libs/
 │   │   ├── glm/               ← matemáticas header-only
 │   │   ├── lua/               ← lua.h, lauxlib.h, etc.
@@ -352,90 +375,159 @@ Cada nivel escala en peligro y los enemigos se vuelven más variados.
 ### Niveles y assets
 
 **Nivel 1 — Mazmorra oscura**
-- Tileset: Pack gratuito Anokolisa (`anokolisa.itch.io/dungeon-crawler-pixel-art-asset-pack`)
-- Objetivo: recolectar 6 reliquias y llegar al portal de salida
-- Enemigos: familia Skeleton + familia Orc
-- Armas: armas base del pack gratuito
+- Tileset: buscar tileset dungeon top-down gratis en `free-game-assets.itch.io`
+- Enemigos normales: Slime + Goblin
+- Mini-boss: **Goblin Jefe** — guarda la reliquia principal, más HP y más grande
+- Objetivo: recolectar 5 reliquias normales + derrotar al Goblin Jefe → portal de salida
+- Mecánica especial: ninguna — nivel de aprendizaje, el jugador aprende los controles
+- Duración estimada: ~2 minutos
 
-**Nivel 2 — Bosque encantado**
-- Tileset: Pixel Crawler - Fairy Forest ($5) (`anokolisa.itch.io/pixel-crawler-ff`)
-- Objetivo: conseguir 3 llaves élficas → robar reliquias → escapar
-- Enemigos: familia Elf
-- Armas: armas élficas (upgrade del nivel 1)
+**Nivel 2 — Bosque oscuro**
+- Tileset: buscar tileset forest/woods top-down gratis en `free-game-assets.itch.io`
+- Enemigos normales: Goblin + Orc + Vampiro (dispara) + Mimic (disfrazado de reliquia)
+- Mini-boss: **Golem** — guardián del bosque, lento pero devastador, ataque en área
+- Objetivo: recolectar 4 reliquias reales (cuidado con los Mimics) + derrotar al Golem → portal
+- Mecánica especial: Mimic aparece mezclado con reliquias reales — el jugador no sabe cuál es cuál
+- Duración estimada: ~2.5 minutos
 
 **Nivel 3 — Cementerio maldito**
-- Tileset: Pixel Crawler - Cemetery ($7.50) (`anokolisa.itch.io/pixel-crawler-cemetery`)
-- Objetivo: encontrar la reliquia del dragón + escapar (contrarreloj visible)
-- Enemigos: familia Zombie + Dragón jefe
-- Armas: armas malditas (upgrade del nivel 2)
+- Tileset: `free-game-assets.itch.io/free-undead-tileset-top-down-pixel-art` (ya encontrado, gratis)
+- Enemigos normales: Slime (versión rápida) + Orc + Vampiro + Mimic
+- Boss final: **Dragón** — patrulla central, escupe fuego, ataque especial al 50% HP
+- Objetivo: encontrar la reliquia del Dragón + derrotarlo → portal de escape + contrarreloj
+- Mecánica especial: contrarreloj visible desde que se activa el portal — presión de tiempo
+- Duración estimada: ~3 minutos
 
-Assets adicionales:
-- **Dragón jefe** ($3): `xzany.itch.io/dragon-2d-pixel-art` — 6 animaciones, sprite 48×64px
-- **Gemas/reliquias** (gratis CC0): greatdocbrown — Coins & Gems & Chests
-- Gasto total estimado: ~$15.50
+**Tilesets a buscar (todos gratis en free-game-assets.itch.io o similar):**
+- Dungeon/mazmorra 16×16 top-down
+- Forest/bosque oscuro 16×16 top-down  
+- Undead/cementerio: ya tenés el link ✅
 
-### Familias de enemigos — variantes y fuerza
+**Gemas/reliquias:** buscar "free pixel art gem icon" o similar — CC0 preferido
 
-Cada variante tiene distinto HP, velocidad y daño configurado en su script Lua.
-La lógica de IA es compartida por familia — solo cambian las variables numéricas.
+### Enemigos — comportamiento detallado
 
-**Familia Skeleton — Nivel 1** | Animaciones: Death, Run, Idle
-Comportamiento base: patrullan ruta fija, atacan melee al acercarse.
+Todos los assets son de CraftPix (mismo estilo visual garantizado).
+Cada enemigo tiene su script Lua con variables de HP, velocidad y daño.
+La lógica de IA se implementa una vez por tipo y se reutiliza entre niveles.
 
-| Tag | Variante | HP | Velocidad | Comportamiento especial | Puntos |
-|---|---|---|---|---|---|
-| `"skeleton_base"` | Base | 1 | lento | ninguno | +10 |
-| `"skeleton_mage"` | Mage | 1 | lento | dispara proyectil | +20 |
-| `"skeleton_warrior"` | Warrior | 2 | medio | más daño melee | +25 |
-| `"skeleton_rogue"` | Rogue | 1 | rápido | se acerca más rápido | +20 |
+---
 
-**Familia Orc — Nivel 1** | Animaciones: Death, Run, Idle
-Comportamiento base: persiguen al jugador al detectarlo, más agresivos.
+**Slime** | Tag: `"slime"` | Asset: gratis CraftPix
+- Se mueve en saltos aleatorios por el mapa — elige dirección random cada 1-2 segundos
+- NO persigue al jugador activamente — solo rebota por el área
+- Al colisionar con el jugador hace daño de contacto
+- Es el enemigo más predecible — fácil de esquivar si lo observás
+- Aparece en: Nivel 1, Nivel 3 (versión más rápida)
+- HP: 1 | Velocidad: lento | Daño: bajo | Puntos: +10
 
-| Tag | Variante | HP | Velocidad | Comportamiento especial | Puntos |
-|---|---|---|---|---|---|
-| `"orc_base"` | Base | 2 | medio | ninguno | +15 |
-| `"orc_mage"` | Mage | 1 | lento | dispara hechizo de área | +30 |
-| `"orc_warrior"` | Warrior | 3 | lento | muy alto daño melee | +35 |
-| `"orc_rogue"` | Rogue | 2 | muy rápido | persigue sin parar | +25 |
+---
 
-**Familia Elf — Nivel 2** | Animaciones: Death, Run, Idle, Hit
-Comportamiento base: patrullan, atacan a distancia.
+**Goblin** | Tag: `"goblin"` | Asset: $0.70 CraftPix
+- Patrulla una ruta fija de waypoints definida en la escena Lua
+- Al detectar al jugador (rango configurable) abandona la ruta y persigue
+- Ataca en melee cuando está adyacente al jugador
+- Si el jugador se aleja suficiente, vuelve a su ruta
+- Aparece en: Nivel 1, Nivel 2
+- HP: 2 | Velocidad: medio | Daño: medio | Puntos: +20
 
-| Tag | Variante | HP | Velocidad | Comportamiento especial | Puntos |
-|---|---|---|---|---|---|
-| `"elf_base"` | Base | 1 | medio | melee corto | +15 |
-| `"elf_ranger"` | Ranger | 2 | medio | proyectil rápido a distancia | +30 |
-| `"elf_hunter"` | Hunter | 1 | rápido | proyectil + se mueve mientras dispara | +35 |
-| `"elf_druid"` | Druid | 2 | lento | hechizo lento pero de área | +40 |
+**Goblin Jefe (Mini-boss Nivel 1)** | Tag: `"goblin_boss"`
+- Mismo sprite que el Goblin pero más grande (scale 2x) y diferente color si es posible
+- Más HP y más rápido que el Goblin normal
+- Guarda la reliquia principal del nivel 1 — patrulla alrededor de ella
+- Al morir: aparece la reliquia final y se activa el portal de salida
+- HP: 6 | Velocidad: medio-rápido | Daño: alto | Puntos: +80
 
-**Familia Zombie — Nivel 3** | Animaciones: Death, Run, Idle, Hit
-Comportamiento base: lentos pero resistentes, se mueven en grupos.
+---
 
-| Tag | Variante | HP | Velocidad | Comportamiento especial | Puntos |
-|---|---|---|---|---|---|
-| `"zombie_base"` | Base | 2 | muy lento | ninguno | +15 |
-| `"zombie_muscle"` | Muscle | 4 | lento | muy alto daño | +30 |
-| `"zombie_deformed"` | Deformed | 3 | medio | errático, difícil de esquivar | +25 |
-| `"zombie_banshee"` | Banshee | 1 | lento | grita atrayendo zombies cercanos | +20 |
+**Orc** | Tag: `"orc"` | Asset: gratis CraftPix
+- Persigue al jugador activamente desde que lo detecta — no tiene ruta fija
+- Más lento que el Goblin pero más resistente y hace más daño
+- No dispara — es puramente melee agresivo
+- Difícil de esquivar en espacios cerrados
+- Aparece en: Nivel 2, Nivel 3
+- HP: 3 | Velocidad: medio | Daño: alto | Puntos: +25
 
-**Dragón — Jefe final Nivel 3** | Animaciones: Idle, Run, Attack1, Attack2, Hurt, Death
+---
 
-| Tag | HP | Velocidad | Comportamiento | Puntos |
-|---|---|---|---|---|
-| `"dragon"` | 10 | lento | patrulla zona central, escupe fuego en línea recta | +150 |
+**Vampiro** | Tag: `"vampire"` | Asset: gratis CraftPix
+- **ÚNICO ENEMIGO QUE DISPARA** — lanza proyectiles de energía oscura
+- Mantiene distancia del jugador — huye si el jugador se acerca demasiado
+- Dispara en la dirección del jugador cada N segundos (cooldown configurable)
+- Sus proyectiles usan el mismo sistema que `spawn_projectile` pero con tag `"enemy_projectile"`
+- El jugador debe esquivar activamente o usar power-up
+- Aparece en: Nivel 2, Nivel 3
+- HP: 2 | Velocidad: rápido | Daño proyectil: medio | Puntos: +35
 
-Al morir el dragón aparece la reliquia final y se activa el portal de escape.
+---
 
-### Patrón de implementación en Lua para variantes
+**Mimic** | Tag: `"mimic"` | Asset: sprite de reliquia/cofre (sin costo extra)
+- Se disfraza visualmente como una reliquia normal en el suelo
+- Usa el mismo sprite que las reliquias reales — el jugador NO puede distinguirlo
+- Implementado con OverlapSystem: cuando el jugador se acerca a cierto radio, "despierta"
+- Al despertar: cambia el sprite al de Goblin o Vampiro y ataca inmediatamente
+- La sorpresa es el arma principal — hace daño directo al activarse
+- El jugador aprende a ser cauteloso con todas las reliquias
+- Aparece en: Nivel 2 y Nivel 3 (nunca en nivel 1 para que el jugador aprenda primero)
+- HP: 2 | Velocidad: rápido al activarse | Daño: alto (sorpresa) | Puntos: +50
 
+---
+
+**Golem** | Tag: `"golem"` | Asset: $0.70 CraftPix
+- **Mini-boss Nivel 2** — ocupa el centro del mapa, guarda las reliquias principales
+- Patrulla un área pequeña alrededor de su zona
+- Muy lento pero con mucho HP y daño devastador en melee
+- Tiene un ataque especial de golpe en área (shockwave) cada N segundos
+  — el jugador debe alejarse al ver la animación de carga
+- Al morir: aparece la reliquia final del nivel 2
+- HP: 8 | Velocidad: muy lento | Daño: muy alto | Puntos: +100
+
+---
+
+**Dragón** | Tag: `"dragon"` | Asset: PixelLab (mismo estilo que el jugador)
+- **Boss final Nivel 3** — el enemigo más poderoso del juego
+- Patrulla la zona central del cementerio en un círculo grande
+- Ataque 1: escupe fuego en línea recta en la dirección del jugador
+  — proyectil lento pero que persiste en el mapa 2-3 segundos
+- Ataque 2: gira y escupe en las 4 direcciones simultáneamente (ataque especial)
+  — se activa cuando baja al 50% de HP
+- Al detectar al jugador cerca: carga hacia él en sprint corto
+- Al morir: aparece la reliquia final y se activa el portal de escape + contrarreloj
+- HP: 12 | Velocidad: lento/sprint | Daño: muy alto | Puntos: +200
+
+---
+
+### Assets confirmados
+
+| Enemigo | Asset | Costo |
+|---|---|---|
+| Slime | CraftPix freebie | $0 |
+| Goblin + Goblin Boss | CraftPix | $0.70 |
+| Orc | CraftPix freebie | $0 |
+| Vampiro | CraftPix freebie | $0 |
+| Mimic | Sprite de reliquia (reutilizado) | $0 |
+| Golem | CraftPix | $0.70 |
+| Dragón | PixelLab (~3 generaciones) | $0 |
+| Jugador | PixelLab (ya generado) | $0 |
+
+**Total: $1.40**
+
+### Mecánica de proyectiles enemigos
+El Vampiro usa `spawn_projectile` con tag `"enemy_projectile"`.
+El proyectil del jugador ignora `"enemy_projectile"` — no se cancelan entre sí.
+El jugador recibe daño al colisionar con `"enemy_projectile"`.
+Agregar este tag a la lista de ignorados en `projectile.lua` del jugador.
+
+### Patrón de implementación en Lua
 ```lua
--- skeleton_warrior.lua — solo cambia variables, lógica igual que skeleton_base.lua
+-- goblin.lua — variables configurables por tipo
 local HP = 2
-local SPEED = 80
-local DAMAGE = 2
-local POINTS = 25
--- require o copiar lógica de patrulla/detección compartida
+local SPEED = 100
+local DAMAGE = 1
+local POINTS = 20
+local DETECTION_RANGE = 150  -- píxeles para detectar al jugador
+local ATTACK_RANGE = 32      -- píxeles para atacar en melee
+local PATROL_WAYPOINTS = {}  -- definidos en on_awake desde la escena
 ```
 
 ### Power-ups
@@ -486,104 +578,61 @@ Si algo no compila, resolver antes de continuar.
 
 ---
 
-### FASE 1 — Jugador y mundo base (prioridad máxima)
+### FASE 1 — Jugador y mundo base ✅ COMPLETADA
 
-**Tarea 1 — Escena base del nivel 1** ✅ COMPLETADA
-- `scene_level_01.lua` con mapa, jugador, cámara
-
-**Tarea 2 — Ataque del jugador** ✅ COMPLETADA
-- Melee con `spawn_melee` + `kill_entity` (hitbox temporal, MELEE_DURATION=0.15s)
-- Disparo con `spawn_projectile` (PROJ_SPEED=350, cooldown=0.35s)
-- Bindings implementados: `spawn_projectile`, `spawn_melee`, `kill_entity`
-- Scripts: `player_level01.lua`, `projectile.lua`
-- Facing direction implementado (horizontal tiene prioridad sobre vertical)
-- Teclas: ATTACK=melee, SHOOT=disparo
-
-**Tarea 3 — Score y HUD**
-- TextComponent en pantalla con score actual (fijo, no sigue cámara)
-- Variable global Lua `score` accesible desde cualquier script
-- Binding para actualizar el texto desde Lua: `set_text(entity, string)`
+**Tarea 1** ✅ — `scene_level_01.lua` con mapa, jugador, cámara
+**Tarea 2** ✅ — Melee + disparo, `spawn_melee`, `spawn_projectile`, `kill_entity`
+  - `player_level01.lua`: movimiento 8-dir, facing direction, melee (ATTACK), disparo (SHOOT)
+  - `projectile.lua`: se destruye con cualquier tag excepto player/projectile/player_melee
 
 ---
 
-### FASE 2 — Enemigos (uno a la vez, en orden de complejidad)
+### FASE 2 — Enemigos ✅ COMPLETADA
 
-**Tarea 4 — Slime**
-- `assets/scripts/enemy_slime.lua`
-- Movimiento: cada N segundos elige dirección aleatoria y salta
-- Al recibir daño (colisión con proyectil o melee): reduce HP, muere si llega a 0
-- Al morir: suma +10 al score, se destruye
-- Binding necesario: `kill_entity(entity)` o usar el existente
+**Tarea 3** ✅ — Score y HUD → `hud.lua`
+**Tarea 4** ✅ — Slime → movimiento aleatorio por saltos
+**Tarea 5** ✅ — Skeleton → `enemy_skeleton_base.lua` + `enemy_skeleton_mage.lua`
+**Tarea 6** ✅ — Mimic → `enemy_mimic.lua` (disfrazado de reliquia, ataca al acercarse)
+**Tarea 7** ✅ — Dragón → `enemy_dragon.lua` (patrulla, escupe fuego)
 
-**Tarea 5 — Arquero esqueleto**
-- `assets/scripts/enemy_archer.lua`
-- Patrulla ruta fija definida en el script (lista de waypoints)
-- Si el jugador entra en rango de visión: dispara proyectil hacia él
-- Al morir: +25 score
-
-**Tarea 6 — Mimic**
-- `assets/scripts/enemy_mimic.lua`
-- Spawn con sprite de reliquia (disfrazado)
-- Al solapar con jugador (OverlapSystem): cambia a sprite de enemigo y ataca
-- Es el más sorpresivo — colocarlo cerca de reliquias reales
-- Al morir: +50 score
-
-**Tarea 7 — Dragón**
-- `assets/scripts/enemy_dragon.lua`
-- Patrulla zona central del nivel 3
-- Cada N segundos escupe proyectil de fuego en línea recta
-- Más HP que los demás
-- Al morir: +100 score
+**Enemigos pendientes de script** (implementar cuando se agreguen los sprites):
+- `enemy_goblin.lua` + `enemy_goblin_boss.lua` — sprites goblin/ pendiente
+- `enemy_orc.lua` — sprite orc_warrior.png ✅ ya está
+- `enemy_vampire.lua` — sprites vampire/ ✅ ya están
+- `enemy_golem.lua` — sprites golem/ pendiente
 
 ---
 
-### FASE 3 — Mecánica de reliquias y condición de victoria
+### FASE 3 — Reliquias y victoria ✅ COMPLETADA
 
-**Tarea 8 — Reliquias y llave**
-- Entidad "reliquia" con OverlapSystem — al tocarla el jugador la recoge
-- Contador de reliquias en HUD
-- Portal de salida: solo activo cuando se tienen todas las reliquias
-- Al entrar al portal: `go_to_scene("level_02")` o pantalla de victoria
-
-**Tarea 9 — Sistema de pausa**
-- Tecla ESC pausa el juego (mostrar texto "PAUSA" en pantalla)
-- El game loop no llama Update() mientras está pausado
-- Esto requiere un flag en Game.cpp o manejarlo desde Lua
+**Tarea 8** ✅ — `relic.lua` + `portal.lua` — recolección y condición de victoria
+**Tarea 9** ✅ — Sistema de pausa
 
 ---
 
-### FASE 4 — Power-ups
+### FASE 4 — Power-ups ✅ COMPLETADA
 
-**Tarea 10 — Capa de invisibilidad**
-- Entidad con sprite de power-up, OverlapSystem
-- Al recogerlo: flag global `player_invisible = true` por 5 segundos
-- Los enemigos chequean ese flag antes de detectar al jugador
-- Efecto visual: reducir alpha del sprite del jugador
-
-**Tarea 11 — Orbe señuelo**
-- Al recogerlo: todos los enemigos cambian su target a una posición fija por 8s
-- Los scripts de enemigos chequean `decoy_active` y `decoy_x, decoy_y`
-
-**Tarea 12 — Pergamino temporal**
-- Al recogerlo: flag `time_slow = true` por 5s
-- En cada script de enemigo: multiplicar velocidad por 0.2 si `time_slow`
-- Efecto visual: tinte azul en pantalla (si se puede con SDL)
+**Tarea 10** ✅ — `powerup_cloak.lua` — invisibilidad 5s
+**Tarea 11** ✅ — `powerup_decoy.lua` — señuelo 8s
+**Tarea 12** ✅ — `powerup_timeslow.lua` — tiempo lento 5s
 
 ---
 
-### FASE 5 — Niveles 2 y 3
+### FASE 5 — Niveles 2 y 3 🔄 EN PROGRESO
 
-**Tarea 13 — Nivel 2: Castillo maldito**
-- `scene_level_02.lua` con nuevo mapa y ambientación oscura
-- Mecánica de llaves: 3 llaves que abren el portal de salida
-- Mimic aparece por primera vez aquí
-- Música diferente al nivel 1
+**Tarea 13 — Nivel 2: Bosque oscuro** 🔄 EN PROGRESO
+- Crear `scene_level_02.lua`
+- Enemigos: Goblin + Orc + Vampiro + Mimic
+- Mini-boss: Golem (guarda la reliquia principal)
+- Mecánica especial: Mimic mezclado con reliquias reales
+- Tileset: buscar forest top-down gratis en free-game-assets.itch.io
 
-**Tarea 14 — Nivel 3: Ruinas del dragón**
-- `scene_level_03.lua` con contrarreloj visible en HUD
-- Puertas que se cierran progresivamente (entidades que aparecen con timer)
-- Dragón como enemigo principal
-- Al morir el dragón: aparece la reliquia final
+**Tarea 14 — Nivel 3: Cementerio maldito** ⏳ PENDIENTE
+- Crear `scene_level_03.lua`
+- Enemigos: Slime rápido + Orc + Vampiro + Mimic
+- Boss final: Dragón (dos fases — ataque especial al 50% HP)
+- Mecánica especial: contrarreloj al activar portal
+- Tileset: `free-game-assets.itch.io/free-undead-tileset-top-down-pixel-art`
 
 ---
 

@@ -16,6 +16,8 @@
 #include "../Systems/UISystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/BoxCollisionSystem.hpp"
+#include "../Systems/RenderBoxColliderSystem.hpp"
+#include "../Systems/RenderHealthBarSystem.hpp"
 
 // Constructor
 Game::Game(){
@@ -58,8 +60,8 @@ void Game::Init() {
         return;
     }
 
-    windowWidth = 800;
-    windowHeight = 600;
+    windowWidth = 1024;
+    windowHeight = 720;
 
     mapHeight = 2000;
     mapWidth = 2000;
@@ -82,7 +84,7 @@ void Game::Init() {
     renderer = SDL_CreateRenderer(
         window,
         -1, // Driver de la pantalla; [ The index of the rendering driver]
-        0 // Banderas; 0 es sin banderas
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE
     );
 
     if (!renderer) {
@@ -112,6 +114,8 @@ void Game::SetUp() {
     registry->AddSystem<RenderTextSystem>();
     registry->AddSystem<UISystem>();
     registry->AddSystem<CameraMovementSystem>();
+    registry->AddSystem<RenderBoxColliderSystem>();
+    registry->AddSystem<RenderHealthBarSystem>();
     sceneManager->LoadSCeneFromScript("./assets/scripts/scenes.lua", lua);
 
     lua.open_libraries(sol::lib::base, sol::lib::math);
@@ -130,6 +134,10 @@ void Game::ProcessInput() {
                 isRunning = false;
                 break;
             case SDL_KEYDOWN:
+                if (sdlEvent.key.keysym.sym == SDLK_F1) {
+                    showColliders = !showColliders;
+                    break;
+                }
                 if (sdlEvent.key.keysym.sym == SDLK_ESCAPE) {
                     isPaused = !isPaused;
                     if (!isPaused) {
@@ -201,6 +209,11 @@ void Game::Render() {
 
     registry->GetSystem<RenderSystem>().Update(renderer, camera, assetManager);
     registry->GetSystem<RenderTextSystem>().Update(renderer, assetManager);
+    registry->GetSystem<RenderHealthBarSystem>().Update(renderer, camera);
+
+    if (showColliders) {
+        registry->GetSystem<RenderBoxColliderSystem>().Update(renderer, camera);
+    }
 
     bool timeSlow = lua["time_slow"].get_or(false);
     if (timeSlow) {

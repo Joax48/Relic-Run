@@ -1,6 +1,7 @@
 #ifndef RENDERSYSTEM_HPP
 #define RENDERSYSTEM_HPP
 
+#include <algorithm>
 #include <SDL2/SDL.h>
 
 #include "../AssetManager/AssetManager.hpp"
@@ -18,7 +19,13 @@ class RenderSystem: public System {
         void Update(SDL_Renderer* renderer, SDL_Rect& camera
             , const std::unique_ptr<AssetManager>& AssetManager) {
 
-                for (auto entity : GetSystemEntities()) {
+                auto entities = GetSystemEntities();
+                std::stable_sort(entities.begin(), entities.end(), [](const Entity& a, const Entity& b) {
+                    return a.GetComponent<SpriteComponent>().zIndex <
+                           b.GetComponent<SpriteComponent>().zIndex;
+                });
+
+                for (auto entity : entities) {
                     const auto sprite = entity.GetComponent<SpriteComponent>();
                     const auto transform = entity.GetComponent<TransformComponent>();
 

@@ -10,7 +10,9 @@ src/Game/*.cpp \
 src/ECS/*.cpp \
 src/AssetManager/*.cpp \
 src/ControllerManager/*.cpp \
-src/SceneManager/*.cpp 
+src/SceneManager/*.cpp \
+src/MapLoader/*.cpp \
+libs/tinyxml2.cpp
 
 LFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -llua5.3
 

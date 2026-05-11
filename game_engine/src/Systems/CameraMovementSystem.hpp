@@ -1,6 +1,7 @@
 #ifndef CAMARAMOVEMENTSYSTEM_HPP
 #define CAMARAMOVEMENTSYSTEM_HPP
 
+#include <algorithm>
 #include <SDL2/SDL.h>
 
 #include "../Components/CameraFollowComponent.hpp"
@@ -16,18 +17,18 @@ class CameraMovementSystem : public System {
         }
 
         void Update(SDL_Rect& camera) {
+            auto& game = Game::GetInstance();
             for (auto entity : GetSystemEntities()) {
                 const auto& transform = entity.GetComponent<TransformComponent>();
 
-                if (transform.position.x + (camera.w / 2 ) < static_cast<float>(Game::GetInstance().mapWidth)) {
-                    camera.x = static_cast<int>((transform.position.x ) - (camera.w / 2));
-                }
-                
-                if (transform.position.y + (camera.h / 2 ) < static_cast<float>(Game::GetInstance().mapHeight)) {
-                    camera.y = static_cast<int>((transform.position.y ) - (camera.h / 2));
-                }
-                camera.x = camera.x < 0 ? 0 : camera.x;
-                camera.y = camera.y < 0 ? 0 : camera.y;
+                camera.x = static_cast<int>(transform.position.x) - camera.w / 2;
+                camera.y = static_cast<int>(transform.position.y) - camera.h / 2;
+
+                int maxX = game.mapWidth  - camera.w;
+                int maxY = game.mapHeight - camera.h;
+
+                camera.x = std::max(0, maxX > 0 ? std::min(camera.x, maxX) : 0);
+                camera.y = std::max(0, maxY > 0 ? std::min(camera.y, maxY) : 0);
             }
         }
 };

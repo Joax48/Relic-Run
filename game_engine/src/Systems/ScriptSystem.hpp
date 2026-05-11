@@ -39,13 +39,22 @@ public:
         lua.set_function("down_collision", DownCollision);
 
         lua.set_function("spawn_projectile", SpawnProjectile);
+        lua.set_function("spawn_enemy_projectile", SpawnEnemyProjectile);
         lua.set_function("spawn_melee", SpawnMelee);
         lua.set_function("kill_entity", KillEntity);
 
+        lua.set_function("load_map", LoadMap);
+
         lua.set_function("set_text", SetText);
         lua.set_function("set_sprite", SetSprite);
+        lua.set_function("set_sprite_size", SetSpriteSize);
+        lua.set_function("set_box_collider", SetBoxCollider);
         lua.set_function("set_alpha", SetAlpha);
+        lua.set_function("set_sprite_row", SetSpriteRow);
+        lua.set_function("play_animation", PlayAnimation);
 
+        lua.set_function("set_health", SetHealth);
+        lua.set_function("spawn_orc", SpawnOrc);
     }
 
     void Update(sol::state& lua, double dt) {

@@ -51,12 +51,12 @@ class BoxCollisionSystem : public System {
                     const auto& bTransform = b.GetComponent<TransformComponent>();
 
                     bool collision = CheckAABBCollision(
-                        aTransform.position.x
-                        , aTransform.position.y 
+                        aTransform.position.x + aCollider.offset.x
+                        , aTransform.position.y + aCollider.offset.y
                         , static_cast<float>(aCollider.width)
                         , static_cast<float>(aCollider.height)
-                        , bTransform.position.x
-                        , bTransform.position.y
+                        , bTransform.position.x + bCollider.offset.x
+                        , bTransform.position.y + bCollider.offset.y
                         , static_cast<float>(bCollider.width)
                         , static_cast<float>(bCollider.height));
 

@@ -4,7 +4,10 @@
 #include <string>
 #include <tuple>
 
+#include "../Components/AnimationComponent.hpp"
 #include "../Components/BoxColliderComponent.hpp"
+#include "../Components/HealthBarComponent.hpp"
+#include "../MapLoader/MapLoader.hpp"
 #include "../Components/ScriptComponent.hpp"
 #include "../Components/TagComponent.hpp"
 #include "../Components/TextComponent.hpp"
@@ -90,95 +93,66 @@ void GoToScene(const std::string& sceneName) {
 
 bool LeftCollision(Entity e, Entity other) {
     const auto& eCollider = e.GetComponent<BoxColliderComponent>();
-    const auto& eTrasnform = e.GetComponent<TransformComponent>();
-
+    const auto& eTrans    = e.GetComponent<TransformComponent>();
     const auto& oCollider = other.GetComponent<BoxColliderComponent>();
-    const auto& oTrasnform = other.GetComponent<TransformComponent>();
-    
-    float eX = eTrasnform.previousPosition.x;
-    float eY = eTrasnform.previousPosition.y;
-    float eH = static_cast<float>(eCollider.height);
+    const auto& oTrans    = other.GetComponent<TransformComponent>();
 
-    float oX = oTrasnform.previousPosition.x;
-    float oY = oTrasnform.previousPosition.y;
+    float eX = eTrans.previousPosition.x + eCollider.offset.x;
+    float eY = eTrans.previousPosition.y + eCollider.offset.y;
+    float eH = static_cast<float>(eCollider.height);
+    float oX = oTrans.previousPosition.x + oCollider.offset.x;
+    float oY = oTrans.previousPosition.y + oCollider.offset.y;
     float oH = static_cast<float>(oCollider.height);
 
-    // El lado izquierdo de e choca contra other
-
-    return (
-        oY < eY + eH &&
-        oY + oH > eY &&
-        oX < eX
-    );
+    return (oY < eY + eH && oY + oH > eY && oX < eX);
 }
 
 bool UpCollision(Entity e, Entity other) {
     const auto& eCollider = e.GetComponent<BoxColliderComponent>();
-    const auto& eTransform = e.GetComponent<TransformComponent>();
-
+    const auto& eTrans    = e.GetComponent<TransformComponent>();
     const auto& oCollider = other.GetComponent<BoxColliderComponent>();
-    const auto& oTransform = other.GetComponent<TransformComponent>();
+    const auto& oTrans    = other.GetComponent<TransformComponent>();
 
-    float eX = eTransform.previousPosition.x;
-    float eY = eTransform.previousPosition.y;
+    float eX = eTrans.previousPosition.x + eCollider.offset.x;
+    float eY = eTrans.previousPosition.y + eCollider.offset.y;
     float eW = static_cast<float>(eCollider.width);
-
-    float oX = oTransform.previousPosition.x;
-    float oY = oTransform.previousPosition.y;
+    float oX = oTrans.previousPosition.x + oCollider.offset.x;
+    float oY = oTrans.previousPosition.y + oCollider.offset.y;
     float oW = static_cast<float>(oCollider.width);
 
-    return (
-        oX < eX + eW &&
-        oX + oW > eX &&
-        oY < eY
-    );
+    return (oX < eX + eW && oX + oW > eX && oY < eY);
 }
 
 bool DownCollision(Entity e, Entity other) {
     const auto& eCollider = e.GetComponent<BoxColliderComponent>();
-    const auto& eTransform = e.GetComponent<TransformComponent>();
-
+    const auto& eTrans    = e.GetComponent<TransformComponent>();
     const auto& oCollider = other.GetComponent<BoxColliderComponent>();
-    const auto& oTransform = other.GetComponent<TransformComponent>();
+    const auto& oTrans    = other.GetComponent<TransformComponent>();
 
-    float eX = eTransform.previousPosition.x;
-    float eY = eTransform.previousPosition.y;
+    float eX = eTrans.previousPosition.x + eCollider.offset.x;
+    float eY = eTrans.previousPosition.y + eCollider.offset.y;
     float eW = static_cast<float>(eCollider.width);
-
-    float oX = oTransform.previousPosition.x;
-    float oY = oTransform.previousPosition.y;
+    float oX = oTrans.previousPosition.x + oCollider.offset.x;
+    float oY = oTrans.previousPosition.y + oCollider.offset.y;
     float oW = static_cast<float>(oCollider.width);
 
-    return (
-        oX < eX + eW &&
-        oX + oW > eX &&
-        oY > eY
-    );
+    return (oX < eX + eW && oX + oW > eX && oY > eY);
 }
 
 bool RightCollision(Entity e, Entity other) {
     const auto& eCollider = e.GetComponent<BoxColliderComponent>();
-    const auto& eTrasnform = e.GetComponent<TransformComponent>();
-
+    const auto& eTrans    = e.GetComponent<TransformComponent>();
     const auto& oCollider = other.GetComponent<BoxColliderComponent>();
-    const auto& oTrasnform = other.GetComponent<TransformComponent>();
-    
-    float eX = eTrasnform.previousPosition.x;
-    float eY = eTrasnform.previousPosition.y;
-    float eH = static_cast<float>(eCollider.height);
+    const auto& oTrans    = other.GetComponent<TransformComponent>();
 
-    float oX = oTrasnform.previousPosition.x;
-    float oY = oTrasnform.previousPosition.y;
+    float eX = eTrans.previousPosition.x + eCollider.offset.x;
+    float eY = eTrans.previousPosition.y + eCollider.offset.y;
+    float eH = static_cast<float>(eCollider.height);
+    float oX = oTrans.previousPosition.x + oCollider.offset.x;
+    float oY = oTrans.previousPosition.y + oCollider.offset.y;
     float oH = static_cast<float>(oCollider.height);
 
-    // El lado derecho de e choca contra other
-
-    return (
-        oY < eY + eH &&
-        oY + oH > eY &&
-        oX > eX
-    );
-
+    return (oY < eY + eH && oY + oH > eY && oX > eX);
 }
 
 //* Entidades en runtime
@@ -200,6 +174,39 @@ Entity SpawnProjectile(float x, float y, float vx, float vy) {
     game.lua["on_click"] = sol::nil;
     game.lua["on_collision"] = sol::nil;
     game.lua.script_file("./assets/scripts/projectile.lua");
+
+    sol::function update_fn = sol::lua_nil;
+    sol::function on_collision_fn = sol::lua_nil;
+
+    sol::optional<sol::function> has_update = game.lua["update"];
+    if (has_update != sol::nullopt) update_fn = has_update.value();
+
+    sol::optional<sol::function> has_collision = game.lua["on_collision"];
+    if (has_collision != sol::nullopt) on_collision_fn = has_collision.value();
+
+    proj.AddComponent<ScriptComponent>(update_fn, sol::lua_nil, on_collision_fn);
+
+    game.lua["this"] = saved_this;
+    return proj;
+}
+
+Entity SpawnEnemyProjectile(float x, float y, float vx, float vy) {
+    auto& game = Game::GetInstance();
+    sol::object saved_this = game.lua["this"];
+
+    Entity proj = game.registry->CreateEntity();
+    proj.AddComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(2.0f, 2.0f), 0.0);
+    proj.AddComponent<SpriteComponent>("projectile", 8, 8, 0, 0);
+    proj.AddComponent<RigidBodyComponent>(false, false, 1.0f);
+    proj.GetComponent<RigidBodyComponent>().velocity = glm::vec2(vx, vy);
+    proj.AddComponent<BoxColliderComponent>(16, 16, glm::vec2(0, 0));
+    proj.AddComponent<TagComponent>("enemy_projectile");
+
+    game.lua["on_awake"] = sol::nil;
+    game.lua["update"] = sol::nil;
+    game.lua["on_click"] = sol::nil;
+    game.lua["on_collision"] = sol::nil;
+    game.lua.script_file("./assets/scripts/enemy_projectile.lua");
 
     sol::function update_fn = sol::lua_nil;
     sol::function on_collision_fn = sol::lua_nil;
@@ -239,8 +246,84 @@ void SetSprite(Entity entity, const std::string& assetId) {
     entity.GetComponent<SpriteComponent>().textureId = assetId;
 }
 
+void SetSpriteSize(Entity entity, int w, int h) {
+    auto& sprite = entity.GetComponent<SpriteComponent>();
+    sprite.width     = w;
+    sprite.height    = h;
+    sprite.srcRect   = {0, 0, w, h};
+}
+
+void SetBoxCollider(Entity entity, int w, int h) {
+    auto& col  = entity.GetComponent<BoxColliderComponent>();
+    col.width  = w;
+    col.height = h;
+}
+
+void SetHealth(Entity entity, int hp, int maxHp) {
+    auto& hb = entity.GetComponent<HealthBarComponent>();
+    hb.hp    = hp;
+    hb.maxHp = maxHp;
+}
+
+Entity SpawnOrc(float x, float y) {
+    auto& game = Game::GetInstance();
+    sol::object saved_this = game.lua["this"];
+
+    Entity orc = game.registry->CreateEntity();
+    orc.AddComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1.2f, 1.2f), 0.0);
+    orc.AddComponent<SpriteComponent>("orc1-idle", 64, 64, 0, 0);
+    orc.AddComponent<RigidBodyComponent>(false, false, 1.0f);
+    orc.AddComponent<BoxColliderComponent>(40, 55, glm::vec2(21.0f, 13.0f));
+    orc.AddComponent<TagComponent>("orc");
+    orc.AddComponent<AnimationComponent>(4, 6, true);
+    orc.AddComponent<HealthBarComponent>(3, 3);
+
+    game.lua["on_awake"] = sol::nil;
+    game.lua["update"] = sol::nil;
+    game.lua["on_click"] = sol::nil;
+    game.lua["on_collision"] = sol::nil;
+    game.lua.script_file("./assets/scripts/enemy_orc.lua");
+
+    sol::function update_fn = sol::lua_nil;
+    sol::function on_collision_fn = sol::lua_nil;
+
+    sol::optional<sol::function> has_update = game.lua["update"];
+    if (has_update != sol::nullopt) update_fn = has_update.value();
+
+    sol::optional<sol::function> has_collision = game.lua["on_collision"];
+    if (has_collision != sol::nullopt) on_collision_fn = has_collision.value();
+
+    orc.AddComponent<ScriptComponent>(update_fn, sol::lua_nil, on_collision_fn);
+
+    game.lua["this"] = saved_this;
+    return orc;
+}
+
+void LoadMap(const std::string& tmxPath) {
+    auto& game = Game::GetInstance();
+    MapLoader loader;
+    loader.LoadMap(tmxPath, game.registry, game.assetManager,
+                   game.renderer, game.mapWidth, game.mapHeight);
+}
+
 void SetAlpha(Entity entity, int alpha) {
     entity.GetComponent<SpriteComponent>().alpha = static_cast<Uint8>(alpha);
+}
+
+void SetSpriteRow(Entity entity, int row) {
+    auto& sprite = entity.GetComponent<SpriteComponent>();
+    sprite.srcRect.y = row * sprite.height;
+}
+
+// Cambia sprite + reinicia animación (para cambiar entre idle/walk/attack)
+void PlayAnimation(Entity entity, const std::string& assetId, int numFrames, int speedRate) {
+    auto& sprite     = entity.GetComponent<SpriteComponent>();
+    auto& animation  = entity.GetComponent<AnimationComponent>();
+    sprite.textureId          = assetId;
+    animation.numFrames       = numFrames;
+    animation.frameSpeedRate  = speedRate;
+    animation.startTime       = static_cast<int>(SDL_GetTicks());
+    animation.currentFrame    = 0;
 }
 
 #endif // LUA_BINDING_HPP

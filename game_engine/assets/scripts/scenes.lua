@@ -11,6 +11,10 @@ scenes = {
     },
     {
         name = "level_02",
-        path = "./assets/scripts/scene_02.lua"
+        path = "./assets/scripts/scene_level_02.lua"
+    },
+    {
+        name = "level_03",
+        path = "./assets/scripts/scene_level_03.lua"
     },
 }
