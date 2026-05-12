@@ -51,7 +51,9 @@ const MapLoader::TilesetInfo* MapLoader::FindTileset(int gid) const {
 static bool IsBottomLayer(const char* name) {
     if (!name) return true;
     static const char* bottom[] = {
-        "Water", "Ground", "Spots", "Plates", "Grass", "Grass2",
+        "Water", "Water Effect", "Ground", "Ground 2", "Rocks",
+        "Bridge", "Elevated Space", "Stairs", "Ground Details",
+        "Spots", "Plates", "Grass", "Grass2",
         "Grass_Details6", "Grass_Detail3", "Grass_Detail5", nullptr
     };
     for (int i = 0; bottom[i]; ++i)
@@ -93,10 +95,18 @@ void MapLoader::LoadMap(const std::string& tmxPath,
     // derived from known image dimensions ÷ tile size.
     struct ExtFallback { int firstGid; const char* img; int cols; };
     static const ExtFallback kExt[] = {
+        // level_01
         {2623, "ground_grass_details.png", 21},
-        {3001, "Trees_animation.png",      36},  // 576/16
-        {5341, "Interior.png",             14},  // 224/16
-        {5719, "house_details.png",        10},  // 160/16
+        {3001, "Trees_animation.png",      36},
+        {5341, "Interior.png",             14},
+        {5719, "house_details.png",        10},
+        // level_02
+        {1,    "Ground_rocks.png",         26},
+        {2263, "details.png",              40},
+        {2823, "Objects.png",              75},
+        {6423, "water_coasts.png",         23},
+        {7826, "Objects_animated.png",     44},
+        {9542, "water_detilazation.png",   37},
         {0, nullptr, 0}
     };
 
@@ -162,7 +172,7 @@ void MapLoader::LoadMap(const std::string& tmxPath,
     for (auto* g = mapElem->FirstChildElement("group"); g;
          g = g->NextSiblingElement("group")) {
         const char* n = g->Attribute("name");
-        if (n && strcmp(n, "Map") == 0) { mapGroup = g; break; }
+        if (n && (strcmp(n, "Map") == 0 || strcmp(n, "Environment") == 0)) { mapGroup = g; break; }
     }
 
     // Bake helper: render all matching layers onto `target`
@@ -244,7 +254,7 @@ void MapLoader::LoadMap(const std::string& tmxPath,
     for (auto* e = mapElem->FirstChildElement("objectgroup"); e;
          e = e->NextSiblingElement("objectgroup")) {
         const char* n = e->Attribute("name");
-        if (n && strcmp(n, "Collisions") == 0) { collGroup = e; break; }
+        if (n && (strcmp(n, "Collisions") == 0 || strcmp(n, "Colliders") == 0)) { collGroup = e; break; }
     }
 
     int wallCount = 0;

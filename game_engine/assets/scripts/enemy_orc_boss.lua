@@ -4,9 +4,9 @@
 local HP           = 6
 local MAX_HP       = 6
 local POINTS       = 100
-local DETECT_RANGE = 350
-local CHASE_SPEED  = 35
-local PATROL_SPEED = 22
+local DETECT_RANGE = 420
+local CHASE_SPEED  = 65
+local PATROL_SPEED = 28
 local PATROL_RANGE = 90   -- radio de patrulla alrededor del punto inicial
 
 local dead            = false
@@ -36,10 +36,10 @@ local patrol_timer         = 0.0
 local PATROL_WAIT          = 2.5
 
 local function get_row()
-    if facing_x == -1 then return 1
-    elseif facing_x == 1 then return 2
-    elseif facing_y == -1 then return 3
-    else return 0
+    if facing_x == -1 then return 1   -- West
+    elseif facing_x == 1 then return 2  -- East
+    elseif facing_y == -1 then return 3  -- North
+    else return 0  -- South
     end
 end
 
@@ -79,7 +79,7 @@ function update(dt)
         local dy = player_cy - (sy + HALF)
         local dist = math.sqrt(dx*dx + dy*dy)
         if dist > 1 then
-            if math.abs(dx) >= math.abs(dy) then
+            if math.abs(dx) > math.abs(dy) then
                 facing_x = dx > 0 and 1 or -1; facing_y = 0
             else
                 facing_x = 0; facing_y = dy > 0 and 1 or -1
@@ -94,10 +94,11 @@ function update(dt)
     if not spawned_minions and HP <= MAX_HP / 2 then
         spawned_minions = true
         local bx, by = get_position(this)
-        spawn_orc(bx - 90, by)
-        spawn_orc(bx + 90, by)
-        spawn_orc(bx, by - 90)
-        spawn_orc(bx, by + 90)
+        -- Spawn adjacent to boss, offset right/below to stay on-map
+        spawn_orc(bx + 75,  by + 10)
+        spawn_orc(bx + 150, by + 10)
+        spawn_orc(bx + 75,  by + 100)
+        spawn_orc(bx + 150, by + 100)
     end
 
     local mult = (time_slow and 0.2) or 1.0
@@ -127,7 +128,7 @@ function update(dt)
         local pdy  = patrol_ty - (sy2 + HALF)
         local pdist = math.sqrt(pdx*pdx + pdy*pdy)
         if pdist > 8 then
-            if math.abs(pdx) >= math.abs(pdy) then
+            if math.abs(pdx) > math.abs(pdy) then
                 facing_x = pdx > 0 and 1 or -1; facing_y = 0
             else
                 facing_x = 0; facing_y = pdy > 0 and 1 or -1
@@ -153,7 +154,7 @@ function update(dt)
         return
     end
 
-    if math.abs(dx) >= math.abs(dy) then
+    if math.abs(dx) > math.abs(dy) then
         facing_x = dx > 0 and 1 or -1; facing_y = 0
     else
         facing_x = 0; facing_y = dy > 0 and 1 or -1

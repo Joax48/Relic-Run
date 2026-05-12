@@ -5,9 +5,12 @@ local POINTS = 10
 local HOP_SPEED     = 55
 local HOP_DURATION  = 0.6
 local REST_DURATION = 0.9
-local CHASE_SPEED   = 75
-local DETECT_RANGE  = 160
-local PATROL_RANGE  = 130
+local CHASE_SPEED   = 80
+local DETECT_RANGE  = 240
+local PATROL_RANGE  = 140
+
+-- Slime sprite center offset (scale 1.2 × 32 / 2 ≈ 19)
+local HALF = 19
 
 local dead     = false
 local dying    = false
@@ -46,16 +49,6 @@ local function play_one_shot(a, row)
     set_sprite_row(this, row)
 end
 
-local function player_in_range()
-    if player_invisible then return false end
-    if decoy_active and decoy_x and decoy_y then return true end
-    if not player_cx then return false end
-    local sx, sy = get_position(this)
-    local dx = player_cx - sx
-    local dy = player_cy - sy
-    return math.sqrt(dx*dx + dy*dy) < DETECT_RANGE
-end
-
 function on_awake()
     hop_timer = math.random() * REST_DURATION
     hopping   = false
@@ -80,28 +73,32 @@ function update(dt)
         return
     end
 
-    -- Record home on first frame
     local sx, sy = get_position(this)
-    if not home_x then home_x = sx; home_y = sy end
+    local cx = sx + HALF  -- slime center
+    local cy = sy + HALF
 
-    -- Chase mode: player detected
+    -- Record home on first frame
+    if not home_x then home_x = cx; home_y = cy end
+
+    -- Detect player (compare center-to-center)
     local tx, ty
     if decoy_active and decoy_x and decoy_y then
         tx, ty = decoy_x, decoy_y
     elseif not player_invisible and player_cx then
-        local dx = player_cx - sx
-        local dy = player_cy - sy
+        local dx = player_cx - cx
+        local dy = player_cy - cy
         if math.sqrt(dx*dx + dy*dy) < DETECT_RANGE then
             tx, ty = player_cx, player_cy
         end
     end
 
+    -- Chase mode
     if tx then
-        local dx = tx - sx
-        local dy = ty - sy
+        local dx = tx - cx
+        local dy = ty - cy
         local dist = math.sqrt(dx*dx + dy*dy)
         if dist > 1 then
-            if math.abs(dx) >= math.abs(dy) then
+            if math.abs(dx) > math.abs(dy) then
                 facing_row = dx > 0 and 2 or 1
             else
                 facing_row = dy > 0 and 0 or 3
@@ -114,19 +111,18 @@ function update(dt)
         return
     end
 
-    -- Patrol: random hops around home
-    -- Clamp hop target to patrol range
+    -- Redirect hop back toward home if too far
     if hopping then
-        local hdx = home_x - sx
-        local hdy = home_y - sy
+        local hdx = home_x - cx
+        local hdy = home_y - cy
         if math.sqrt(hdx*hdx + hdy*hdy) > PATROL_RANGE then
-            -- redirect hop back toward home
             local hd = math.sqrt(hdx*hdx + hdy*hdy)
             hop_vx = (hdx/hd) * HOP_SPEED
             hop_vy = (hdy/hd) * HOP_SPEED
         end
     end
 
+    -- Random hop state machine
     hop_timer = hop_timer - dt * mult
     if hop_timer <= 0 then
         if hopping then
@@ -138,7 +134,7 @@ function update(dt)
             local angle = math.random() * math.pi * 2
             hop_vx = math.cos(angle) * HOP_SPEED
             hop_vy = math.sin(angle) * HOP_SPEED
-            if math.abs(hop_vx) >= math.abs(hop_vy) then
+            if math.abs(hop_vx) > math.abs(hop_vy) then
                 facing_row = hop_vx > 0 and 2 or 1
             else
                 facing_row = hop_vy > 0 and 0 or 3

@@ -12,11 +12,8 @@ class PhysicsSystem : public System {
         void Update() {
             for (auto entity : GetSystemEntities()) {
                 auto& rigidBody = entity.GetComponent<RigidBodyComponent>();
-
-                // Aplicar la fuerza de gravedad
-                if (rigidBody.isDynamic) {
-                    rigidBody.sumForces += glm::vec2(0.0f, 9.8 * rigidBody.mass * 64);
-                }
+                // Top-down game — no gravity
+                rigidBody.sumForces = glm::vec2(0.0f);
             }
         }
 };

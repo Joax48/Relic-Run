@@ -65,7 +65,6 @@ scene = {
               {name = "DOWN",     key = 115},  -- S
               {name = "RIGHT",    key = 100},  -- D
               {name = "ATTACK",   key = 106},  -- J
-              {name = "SHOOT",    key = 107},  -- K
               {name = "USE_SLOT1", key = 49},  -- 1
               {name = "USE_SLOT2", key = 50},  -- 2
               {name = "USE_SLOT3", key = 51},  -- 3
@@ -262,7 +261,7 @@ scene = {
             components = {
                 box_collider = {width = 64, height = 64, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "portal-open", width = 320, height = 320, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "portal-open", width = 320, height = 320, src_rect = {x = 0, y = 0}, z_index = 2},
                 animation    = {num_frames = 6, speed_rate = 8, is_loop = true},
                 transform    = {position = {x = 896.0, y = 706.0}, scale = {x = 0.2, y = 0.2}, rotation = 0.0},
                 tag          = {tag = "portal"},

@@ -60,8 +60,8 @@ void Game::Init() {
         return;
     }
 
-    windowWidth = 1024;
-    windowHeight = 720;
+    windowWidth = 800;
+    windowHeight = 600;
 
     mapHeight = 2000;
     mapWidth = 2000;
@@ -261,6 +261,9 @@ void Game::RunScene() {
     isPaused = false;
     assetManager->ClearAssets();
     registry->ClearAllEntities();
+    controllerManager->Clear();
+    camera.x = 0;
+    camera.y = 0;
 }
 
 void Game::Run() {

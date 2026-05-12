@@ -105,6 +105,8 @@ void Registry::Update(){
 }
 
 void Registry::ClearAllEntities() {
+    entitiesToBeAdded.clear();
+    entitiesToBeKilled.clear();
     for(int i = 0; i < numEntity; i++) {
         RemoveEntityfromSystems(Entity(i));
         entityComponentSigantures[i].reset();

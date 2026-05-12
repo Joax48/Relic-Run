@@ -34,10 +34,10 @@ local patrol_tx, patrol_ty = nil, nil
 local patrol_timer         = 0.0
 
 local function get_row()
-    if facing_x == -1 then return 1
-    elseif facing_x == 1 then return 2
-    elseif facing_y == -1 then return 3
-    else return 0
+    if facing_x == -1 then return 1   -- West
+    elseif facing_x == 1 then return 2  -- East
+    elseif facing_y == -1 then return 3  -- North
+    else return 0  -- South
     end
 end
 
@@ -77,7 +77,7 @@ function update(dt)
         local dy = player_cy - (sy + HALF)
         local dist = math.sqrt(dx*dx + dy*dy)
         if dist > 1 then
-            if math.abs(dx) >= math.abs(dy) then
+            if math.abs(dx) > math.abs(dy) then
                 facing_x = dx > 0 and 1 or -1; facing_y = 0
             else
                 facing_x = 0; facing_y = dy > 0 and 1 or -1
@@ -126,7 +126,7 @@ function update(dt)
         local pdy  = patrol_ty - (sy2 + HALF)
         local pdist = math.sqrt(pdx*pdx + pdy*pdy)
         if pdist > 8 then
-            if math.abs(pdx) >= math.abs(pdy) then
+            if math.abs(pdx) > math.abs(pdy) then
                 facing_x = pdx > 0 and 1 or -1; facing_y = 0
             else
                 facing_x = 0; facing_y = pdy > 0 and 1 or -1
@@ -146,7 +146,7 @@ function update(dt)
     local dy = ty - (sy + HALF)
     local dist = math.sqrt(dx * dx + dy * dy)
 
-    if math.abs(dx) >= math.abs(dy) then
+    if math.abs(dx) > math.abs(dy) then
         facing_x = dx > 0 and 1 or -1; facing_y = 0
     else
         facing_x = 0; facing_y = dy > 0 and 1 or -1
