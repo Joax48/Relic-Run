@@ -136,7 +136,7 @@ scene = {
         {
             components = {
                 animation    = {num_frames = 6, speed_rate = 6, is_loop = true},
-                box_collider = {width = 44, height = 36, offset = {x = 26, y = 46}},
+                box_collider = {width = 44, height = 36, offset = {x = 26, y = 30}},
                 health_bar   = {hp = 1, max_hp = 1},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
                 sprite       = {assetId = "slime-idle", width = 64, height = 64, src_rect = {x = 0, y = 0}},
@@ -149,7 +149,7 @@ scene = {
         {
             components = {
                 animation    = {num_frames = 6, speed_rate = 6, is_loop = true},
-                box_collider = {width = 44, height = 36, offset = {x = 26, y = 46}},
+                box_collider = {width = 44, height = 36, offset = {x = 26, y = 30}},
                 health_bar   = {hp = 1, max_hp = 1},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
                 sprite       = {assetId = "slime-idle", width = 64, height = 64, src_rect = {x = 0, y = 0}},

@@ -9,8 +9,8 @@ local CHASE_SPEED   = 80
 local DETECT_RANGE  = 240
 local PATROL_RANGE  = 140
 
--- Slime sprite center offset (scale 1.2 × 32 / 2 ≈ 19)
-local HALF = 19
+-- Slime sprite center offset (64px × scale 1.5 / 2 = 48)
+local HALF = 48
 
 local dead     = false
 local dying    = false
