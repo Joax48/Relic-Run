@@ -15,6 +15,7 @@
 #include "../Components/SpriteComponent.hpp"
 #include "../Components/TransformComponent.hpp"
 #include "../ECS/ECS.hpp"
+#include "../AudioManager/AudioManager.hpp"
 #include "../Game/Game.hpp"
 
 //* Controles
@@ -162,8 +163,9 @@ Entity SpawnProjectile(float x, float y, float vx, float vy) {
     sol::object saved_this = game.lua["this"];
 
     Entity proj = game.registry->CreateEntity();
-    proj.AddComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(2.0f, 2.0f), 0.0);
-    proj.AddComponent<SpriteComponent>("projectile", 8, 8, 0, 0);
+    proj.AddComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1.0f, 1.0f), 0.0);
+    proj.AddComponent<SpriteComponent>("projectile", 16, 16, 0, 0);
+    proj.AddComponent<AnimationComponent>(4, 12, true);
     proj.AddComponent<RigidBodyComponent>(false, false, 1.0f);
     proj.GetComponent<RigidBodyComponent>().velocity = glm::vec2(vx, vy);
     proj.AddComponent<BoxColliderComponent>(16, 16, glm::vec2(0, 0));
@@ -195,8 +197,9 @@ Entity SpawnEnemyProjectile(float x, float y, float vx, float vy) {
     sol::object saved_this = game.lua["this"];
 
     Entity proj = game.registry->CreateEntity();
-    proj.AddComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(2.0f, 2.0f), 0.0);
-    proj.AddComponent<SpriteComponent>("projectile", 8, 8, 0, 0);
+    proj.AddComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1.0f, 1.0f), 0.0);
+    proj.AddComponent<SpriteComponent>("projectile", 16, 16, 0, 0);
+    proj.AddComponent<AnimationComponent>(4, 12, true);
     proj.AddComponent<RigidBodyComponent>(false, false, 1.0f);
     proj.GetComponent<RigidBodyComponent>().velocity = glm::vec2(vx, vy);
     proj.AddComponent<BoxColliderComponent>(16, 16, glm::vec2(0, 0));
@@ -313,6 +316,134 @@ void SetAlpha(Entity entity, int alpha) {
 void SetSpriteRow(Entity entity, int row) {
     auto& sprite = entity.GetComponent<SpriteComponent>();
     sprite.srcRect.y = row * sprite.height;
+}
+
+void SetSpriteWidth(Entity entity, int w) {
+    auto& sprite   = entity.GetComponent<SpriteComponent>();
+    sprite.width   = w;
+    sprite.srcRect.w = w;
+}
+
+void SetVisible(Entity entity, bool visible) {
+    if (entity.hasComponent<SpriteComponent>()) {
+        entity.GetComponent<SpriteComponent>().alpha = visible ? 255 : 0;
+    }
+}
+
+int GetTextWidth(Entity entity) {
+    return entity.GetComponent<TextComponent>().width;
+}
+
+int GetWindowWidth() {
+    return Game::GetInstance().windowWidth;
+}
+
+int GetWindowHeight() {
+    return Game::GetInstance().windowHeight;
+}
+
+int GetCameraX() {
+    return Game::GetInstance().camera.x;
+}
+
+int GetCameraY() {
+    return Game::GetInstance().camera.y;
+}
+
+int GetMouseX() {
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    return x;
+}
+
+int GetMouseY() {
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    return y;
+}
+
+Entity SpawnVampireEnemy(float x, float y) {
+    auto& game = Game::GetInstance();
+    sol::object saved_this = game.lua["this"];
+
+    Entity vamp = game.registry->CreateEntity();
+    vamp.AddComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1.5f, 1.5f), 0.0);
+    vamp.AddComponent<SpriteComponent>("vampire-idle", 64, 64, 0, 0);
+    vamp.AddComponent<RigidBodyComponent>(false, false, 1.0f);
+    vamp.AddComponent<BoxColliderComponent>(38, 54, glm::vec2(13.0f, 10.0f));
+    vamp.AddComponent<TagComponent>("vampire");
+    vamp.AddComponent<AnimationComponent>(4, 6, true);
+    vamp.AddComponent<HealthBarComponent>(2, 2);
+
+    game.lua["on_awake"] = sol::nil;
+    game.lua["update"] = sol::nil;
+    game.lua["on_click"] = sol::nil;
+    game.lua["on_collision"] = sol::nil;
+    game.lua.script_file("./assets/scripts/enemy_vampire.lua");
+
+    sol::function update_fn = sol::lua_nil;
+    sol::function on_collision_fn = sol::lua_nil;
+
+    sol::optional<sol::function> has_update = game.lua["update"];
+    if (has_update != sol::nullopt) update_fn = has_update.value();
+
+    sol::optional<sol::function> has_collision = game.lua["on_collision"];
+    if (has_collision != sol::nullopt) on_collision_fn = has_collision.value();
+
+    vamp.AddComponent<ScriptComponent>(update_fn, sol::lua_nil, on_collision_fn);
+
+    game.lua["this"] = saved_this;
+    return vamp;
+}
+
+//* Audio
+
+void PlayMusic(const std::string& path, bool loop) {
+    Game::GetInstance().audioManager->PlayMusic(path, loop);
+}
+
+void StopMusic() {
+    Game::GetInstance().audioManager->StopMusic();
+}
+
+void PlaySFX(const std::string& path) {
+    Game::GetInstance().audioManager->PlaySFX(path);
+}
+
+//* SpawnGoblin
+
+Entity SpawnGoblin(float x, float y) {
+    auto& game = Game::GetInstance();
+    sol::object saved_this = game.lua["this"];
+
+    Entity goblin = game.registry->CreateEntity();
+    goblin.AddComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1.2f, 1.2f), 0.0);
+    goblin.AddComponent<SpriteComponent>("goblin1-idle", 64, 64, 0, 0);
+    goblin.AddComponent<RigidBodyComponent>(false, false, 1.0f);
+    goblin.AddComponent<BoxColliderComponent>(40, 55, glm::vec2(21.0f, 13.0f));
+    goblin.AddComponent<TagComponent>("orc");
+    goblin.AddComponent<AnimationComponent>(4, 6, true);
+    goblin.AddComponent<HealthBarComponent>(3, 3);
+
+    game.lua["on_awake"] = sol::nil;
+    game.lua["update"] = sol::nil;
+    game.lua["on_click"] = sol::nil;
+    game.lua["on_collision"] = sol::nil;
+    game.lua.script_file("./assets/scripts/enemy_goblin.lua");
+
+    sol::function update_fn = sol::lua_nil;
+    sol::function on_collision_fn = sol::lua_nil;
+
+    sol::optional<sol::function> has_update = game.lua["update"];
+    if (has_update != sol::nullopt) update_fn = has_update.value();
+
+    sol::optional<sol::function> has_collision = game.lua["on_collision"];
+    if (has_collision != sol::nullopt) on_collision_fn = has_collision.value();
+
+    goblin.AddComponent<ScriptComponent>(update_fn, sol::lua_nil, on_collision_fn);
+
+    game.lua["this"] = saved_this;
+    return goblin;
 }
 
 // Cambia sprite + reinicia animación (para cambiar entre idle/walk/attack)

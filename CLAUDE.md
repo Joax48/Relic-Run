@@ -627,12 +627,103 @@ Si algo no compila, resolver antes de continuar.
 - Mecánica especial: Mimic mezclado con reliquias reales
 - Tileset: buscar forest top-down gratis en free-game-assets.itch.io
 
-**Tarea 14 — Nivel 3: Cementerio maldito** ⏳ PENDIENTE
+**Tarea 14 — Nivel 3: Castillo** ⏳ PENDIENTE (solo si hay tiempo)
 - Crear `scene_level_03.lua`
-- Enemigos: Slime rápido + Orc + Vampiro + Mimic
-- Boss final: Dragón (dos fases — ataque especial al 50% HP)
+- Enemigos: Orc + Vampiro + Slime rápido + Mimic
+- Boss final: Dragón (implementar solo si hay tiempo)
 - Mecánica especial: contrarreloj al activar portal
-- Tileset: `free-game-assets.itch.io/free-undead-tileset-top-down-pixel-art`
+
+---
+
+### PATRONES DE BOSS — documentación para implementación
+
+#### Boss Nivel 1 — Goblin Jefe (`goblin_boss.lua`)
+
+**Fase 1 (100% → 50% HP):**
+- Patrulla el claro normalmente
+- Cada 8 segundos hace un **dash**: se lanza en línea recta hacia el jugador
+  a alta velocidad (DASH_SPEED=400) por 0.5 segundos, luego para
+- Cada 15 segundos spawnea 1 goblin normal cerca suyo
+- Señal visual antes del dash: el boss se detiene 0.8s (como cargando)
+
+**Fase 2 (50% → 0% HP):**
+- Cambiar src_rect a fila de sprite alternativo (si existe) para efecto visual
+- Dash más frecuente (cada 5s) y más rápido (DASH_SPEED=550)
+- Spawnea 2 goblins cada 10 segundos en vez de 1 cada 15
+- La presión aumenta naturalmente
+
+```lua
+-- goblin_boss.lua — estructura de fases
+local HP = 8
+local max_hp = 8
+local phase2 = false
+local dash_active = false
+local dash_timer = 0
+local spawn_timer = 0
+local DASH_COOLDOWN = 8.0
+local DASH_DURATION = 0.5
+local DASH_SPEED = 400
+local SPAWN_COOLDOWN = 15.0
+
+function update(dt)
+    -- transición a fase 2
+    if HP <= max_hp * 0.5 and not phase2 then
+        phase2 = true
+        DASH_COOLDOWN = 5.0
+        DASH_SPEED = 550
+        SPAWN_COOLDOWN = 10.0
+    end
+    -- lógica de dash y spawn...
+end
+```
+
+---
+
+#### Boss Nivel 2 — Vampiro Jefe (`vampire_boss.lua`)
+
+**Fase 1 (100% → 50% HP):**
+- Mantiene distancia del jugador (huye si se acerca demasiado)
+- **Ataque 1 — Abanico**: cada 5s dispara 5 proyectiles en cono de 60° hacia el jugador
+- **Ataque 2 — Rueda de fuego**: cada 20s dispara 8 proyectiles en círculo completo
+  que se alejan lentamente. El jugador tiene que encontrar el hueco.
+  ```lua
+  local function spawn_fire_wheel()
+      local px, py = get_position(this)
+      for i = 0, 7 do
+          local angle = (i / 8) * math.pi * 2
+          local vx = math.cos(angle) * PROJ_SPEED
+          local vy = math.sin(angle) * PROJ_SPEED
+          spawn_projectile(px, py, vx, vy)
+      end
+  end
+  ```
+- Spawnea 1 vampiro normal cada 18 segundos
+
+**Fase 2 (50% → 0% HP):**
+- Se **teleporta** a posición aleatoria del mapa (`set_position` a coords random)
+- Inmediatamente spawnea 3 vampiros normales al teleportarse
+- Rueda de fuego más frecuente (cada 12s en vez de 20s)
+- Abanico pasa de 5 a 7 proyectiles
+
+```lua
+-- vampire_boss.lua — teleport al entrar en fase 2
+if HP <= max_hp * 0.5 and not phase2 then
+    phase2 = true
+    -- teleport a posición aleatoria
+    local map_w, map_h = 2000, 2000  -- ajustar al tamaño real del mapa
+    local rx = math.random(200, map_w - 200)
+    local ry = math.random(200, map_h - 200)
+    set_position(this, rx, ry)
+    -- spawn 3 vampiros
+    for i = 1, 3 do
+        spawn_enemy_at("vampire", rx + math.random(-100,100), ry + math.random(-100,100))
+    end
+    fire_wheel_cooldown = 12.0
+end
+```
+
+**Nota:** `spawn_enemy_at` requiere un nuevo binding en LuaBinding.hpp.
+Crearlo cuando se implemente este boss.
 
 ---
 

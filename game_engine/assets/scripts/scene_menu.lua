@@ -1,92 +1,58 @@
+-- Menú principal — Relic Run
+
+play_music("./assets/audio/Theme - Magical Rainbow.ogg", true)
+
 scene = {
-    -- Tabla de imagenes y sprites
-    sprites = {},
-    -- Tabala de fuentes
+    sprites = {
+        [0] = {assetId = "menu-bg", filePath = "./assets/images/menu.png"},
+    },
     fonts = {
-        [0] =
-        {fontId = "press_start_24", filePath = "./assets/fonts/PressStart.ttf", fontSize = 24},
-        {fontId = "press_start_32", filePath = "./assets/fonts/PressStart.ttf", fontSize = 32},
+        [0] = {fontId = "press_start_32", filePath = "./assets/fonts/PressStart.ttf", fontSize = 32},
+              {fontId = "press_start_24", filePath = "./assets/fonts/PressStart.ttf", fontSize = 24},
+              {fontId = "press_start_16", filePath = "./assets/fonts/PressStart.ttf", fontSize = 16},
     },
-
-    -- Tabla de acciones y teclas
-    keys = {
-        [0] =
-        {name = "UP", key = 119}, -- SDLK_w
-        {name = "LEFT", key = 97}, -- SDLK_a
-        {name = "DOWN", key = 115}, -- SDLK_s
-        {name = "RIGHT", key = 100}, -- SDLK_d
-    },
-
-    -- Tabla de aciones y botones del mouse
+    keys   = {},
     buttons = {
-        [0] =
-        {name = "SHOOT", button = 1}, -- SDL_BUTTON_LEFT
+        [0] = {name = "SHOOT", button = 1},
     },
-
-    -- Tabla de entidades
     entities = {
-        [0] =
-    {
+        -- ── Fondo del menú ───────────────────────────────────────────────────
+        [0] = {
             components = {
-                clickable = {
-                },
-                text = {
-                    text = "Galaxian",
-                    fontId = "press_start_32",
-                    r = 150,
-                    g = 0,
-                    b = 150,
-                    a = 255,
-                },
-                transform = {
-                    position = {x = 50.0, y = 50.0},
-                    scale = {x = 1.0, y = 1.0},
-                    rotation = 0.0,
-                },
+                -- menu.png es 1850×997 → escalar a 800×600
+                transform = {position = {x = 0.0, y = 0.0},
+                             scale    = {x = 800.0/1850.0, y = 600.0/997.0},
+                             rotation = 0.0},
+                sprite    = {assetId = "menu-bg", width = 1850, height = 997,
+                             src_rect = {x = 0, y = 0}, z_index = -1},
             }
         },
-     {
+        -- ── Botón START ─────────────────────────────────────────────────────
+        {
             components = {
-                clickable = {
-                },
-                script = {
-                    path = "./assets/scripts/menu_button01.lua",
-                },
-                text = {
-                    text = "Level 01",
-                    fontId = "press_start_24",
-                    r = 150,
-                    g = 150,
-                    b = 0,
-                    a = 255,
-                },
-                transform = {
-                    position = {x = 50.0, y = 150.0},
-                    scale = {x = 1.0, y = 1.0},
-                    rotation = 0.0,
-                },
+                transform = {position = {x = 310.0, y = 490.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                text      = {text = "START", fontId = "press_start_32",
+                             r = 80, g = 215, b = 110, a = 255},
+                clickable = {},
+                script    = {path = "./assets/scripts/menu_start.lua"},
             }
         },
-     {
+        -- ── Versión / crédito ────────────────────────────────────────────────
+        {
             components = {
-                clickable = {
-                },
-                script = {
-                    path = "./assets/scripts/menu_button02.lua",
-                },
-                text = {
-                    text = "Level 02",
-                    fontId = "press_start_24",
-                    r = 150,
-                    g = 150,
-                    b = 0,
-                    a = 255,
-                },
-                transform = {
-                    position = {x = 50.0, y = 250.0},
-                    scale = {x = 1.0, y = 1.0},
-                    rotation = 0.0,
-                },
+                transform = {position = {x = 16.0, y = 568.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                text      = {text = "v0.1", fontId = "press_start_16",
+                             r = 70, g = 70, b = 70, a = 255},
+            }
+        },
+        -- ── Toggle música ────────────────────────────────────────────────────
+        {
+            components = {
+                transform = {position = {x = 0.0, y = 568.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                text      = {text = "[SND]", fontId = "press_start_16",
+                             r = 90, g = 90, b = 90, a = 255},
+                clickable = {},
+                script    = {path = "./assets/scripts/menu_sound.lua"},
             }
         },
     }

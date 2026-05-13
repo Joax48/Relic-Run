@@ -55,6 +55,22 @@ public:
 
         lua.set_function("set_health", SetHealth);
         lua.set_function("spawn_orc", SpawnOrc);
+        lua.set_function("spawn_goblin",          SpawnGoblin);
+        lua.set_function("spawn_vampire_enemy",   SpawnVampireEnemy);
+
+        lua.set_function("play_music", PlayMusic);
+        lua.set_function("stop_music", StopMusic);
+        lua.set_function("play_sfx",   PlaySFX);
+
+        lua.set_function("get_text_width",    GetTextWidth);
+        lua.set_function("set_sprite_width", SetSpriteWidth);
+        lua.set_function("set_visible",      SetVisible);
+        lua.set_function("get_window_width",  GetWindowWidth);
+        lua.set_function("get_window_height", GetWindowHeight);
+        lua.set_function("get_camera_x",      GetCameraX);
+        lua.set_function("get_camera_y",      GetCameraY);
+        lua.set_function("get_mouse_x",       GetMouseX);
+        lua.set_function("get_mouse_y",       GetMouseY);
     }
 
     void Update(sol::state& lua, double dt) {

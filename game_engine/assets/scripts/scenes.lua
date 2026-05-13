@@ -17,4 +17,8 @@ scenes = {
         name = "level_03",
         path = "./assets/scripts/scene_level_03.lua"
     },
+    {
+        name = "game_over",
+        path = "./assets/scripts/scene_game_over.lua"
+    },
 }

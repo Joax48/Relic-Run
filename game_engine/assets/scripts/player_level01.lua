@@ -217,7 +217,7 @@ function update(dt)
     if dying then
         set_velocity(this, 0, 0)
         if anim_lock_timer <= 0 then
-            go_to_scene("main_menu")
+            go_to_scene("game_over")
         end
         return
     end
@@ -247,6 +247,7 @@ function update(dt)
     -- Melee se posiciona relativo al collider real (BODY_W/BODY_H), no al sprite completo.
     -- BoxCollisionSystem ignora el offset del collider y usa transform.position directamente.
     if is_action_activated("ATTACK") and not melee_active then
+        play_sfx("./assets/audio/effects/56_Attack_03.wav")
         local px, py = get_position(this)
         local hw, hh = 32, 32
         -- collider real empieza en (px+BODY_OX, py+BODY_OY)
@@ -369,8 +370,9 @@ function on_collision(other)
 
     if not player_invincible then
         if tag == "enemy_projectile" or tag == "slime" or
-           tag == "vampire" or tag == "orc" or tag == "orc_boss" or tag == "mimic" then
+           tag == "vampire" or tag == "vampire_boss" or tag == "orc" or tag == "orc_boss" or tag == "mimic" then
             player_hp = player_hp - 1
+            play_sfx("./assets/audio/effects/61_Hit_03.wav")
             player_invincible       = true
             player_invincible_timer = INVINCIBLE_DURATION
             if player_hp <= 0 then

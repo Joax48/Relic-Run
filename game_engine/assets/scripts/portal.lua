@@ -1,26 +1,23 @@
-local active     = false
-local activating = false
-local cur_row    = 0
-local MAX_ROW    = 6
+local active       = false
+local activating   = false
+local cur_row      = 0
+local MAX_ROW      = 6
 local ROW_INTERVAL = 0.28
-local row_timer  = 0.0
+local row_timer    = 0.0
 
 function on_awake()
-    -- Static first frame of row 0 before relics collected
     play_animation(this, "portal-open", 1, 1)
     set_sprite_row(this, 0)
 end
 
 function update(dt)
-    if not active and relics_collected and relics_total then
-        if relics_collected >= relics_total then
-            active     = true
-            activating = true
-            cur_row    = 0
-            row_timer  = ROW_INTERVAL
-            play_animation(this, "portal-open", 6, 8)
-            set_sprite_row(this, 0)
-        end
+    if not active and key_collected then
+        active     = true
+        activating = true
+        cur_row    = 0
+        row_timer  = ROW_INTERVAL
+        play_animation(this, "portal-open", 6, 8)
+        set_sprite_row(this, 0)
     end
 
     if activating then
@@ -32,7 +29,6 @@ function update(dt)
                 activating = false
                 play_animation(this, "portal-open", 6, 10)
             else
-                -- Reset frame counter on each row switch for clean transition
                 play_animation(this, "portal-open", 6, 8)
                 row_timer = ROW_INTERVAL
             end

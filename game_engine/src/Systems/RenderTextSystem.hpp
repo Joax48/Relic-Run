@@ -23,6 +23,8 @@ class RenderTextSystem : public System {
             auto& text = entity.GetComponent<TextComponent>();
             auto& transform = entity.GetComponent<TransformComponent>();
 
+            if (text.text.empty()) continue;
+
             SDL_Surface* surface = TTF_RenderText_Blended(assetManager->GetFont(text.fontId), text.text.c_str(), text.color);
             if (!surface) {
                 std::cerr << "[RenderTextSystem] Error al crear la superficie de texto: " << TTF_GetError() << std::endl;

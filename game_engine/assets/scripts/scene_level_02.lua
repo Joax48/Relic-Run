@@ -1,8 +1,12 @@
 -- Nivel 2: Bosque oscuro (mapa 1024×1536)
 
+game_current_level = "level_02"
+
 score             = 0
 relics_total      = 4
 relics_collected  = 0
+key_collected     = false
+player_hp         = 5
 has_cloak         = false
 cloak_cooldown    = 0
 has_decoy         = false
@@ -14,6 +18,7 @@ has_timeslow      = false
 timeslow_cooldown = 0
 time_slow         = false
 
+play_music("./assets/audio/Field - The Little Warrior.ogg", true)
 load_map("./assets/maps/level_02.tmx")
 
 scene = {
@@ -25,13 +30,13 @@ scene = {
               {assetId = "player-hurt",   filePath = "./assets/images/player/PNG/Swordsman_lvl1/Without_shadow/Swordsman_lvl1_Hurt_without_shadow.png"},
               {assetId = "player-dead",   filePath = "./assets/images/player/PNG/Swordsman_lvl1/Without_shadow/Swordsman_lvl1_Death_without_shadow.png"},
               -- Projectiles
-              {assetId = "projectile",    filePath = "./assets/images/barrier_gem.png"},
+              {assetId = "projectile",    filePath = "./assets/images/All_Fire_Bullet_Pixel_16x16.png"},
               -- Slime enemy
               {assetId = "slime-idle",    filePath = "./assets/images/sllime/PNG/Slime1/Idle/Slime1_Idle_full.png"},
               {assetId = "slime-walk",    filePath = "./assets/images/sllime/PNG/Slime1/Walk/Slime1_Walk_full.png"},
               {assetId = "slime-hurt",    filePath = "./assets/images/sllime/PNG/Slime1/Hurt/Slime1_Hurt_full.png"},
               {assetId = "slime-death",   filePath = "./assets/images/sllime/PNG/Slime1/Death/Slime1_Death_full.png"},
-              -- Vampire enemy
+              -- Vampire enemy / boss
               {assetId = "vampire-idle",   filePath = "./assets/images/vampire/PNG/Vampires1/Idle/Vampires1_Idle_full.png"},
               {assetId = "vampire-walk",   filePath = "./assets/images/vampire/PNG/Vampires1/Walk/Vampires1_Walk_full.png"},
               {assetId = "vampire-attack", filePath = "./assets/images/vampire/PNG/Vampires1/Attack/Vampires1_Attack_full.png"},
@@ -43,14 +48,9 @@ scene = {
               {assetId = "orc1-attack", filePath = "./assets/images/orc/PNG/Orc1/Orc1_attack/orc1_attack_full.png"},
               {assetId = "orc1-hurt",   filePath = "./assets/images/orc/PNG/Orc1/Orc1_hurt/orc1_hurt_full.png"},
               {assetId = "orc1-death",  filePath = "./assets/images/orc/PNG/Orc1/Orc1_death/orc1_death_full.png"},
-              -- Golem boss (Orc3)
-              {assetId = "orc3-idle",   filePath = "./assets/images/orc/PNG/Orc3/orc3_idle/orc3_idle_full.png"},
-              {assetId = "orc3-walk",   filePath = "./assets/images/orc/PNG/Orc3/orc3_walk/orc3_walk_full.png"},
-              {assetId = "orc3-run",    filePath = "./assets/images/orc/PNG/Orc3/orc3_run/orc3_run_full.png"},
-              {assetId = "orc3-death",  filePath = "./assets/images/orc/PNG/Orc3/orc3_death/orc3_death_full.png"},
-              {assetId = "orc3-hurt",   filePath = "./assets/images/orc/PNG/Orc3/orc3_hurt/orc3_hurt_full.png"},
               -- Pickups / HUD
-              {assetId = "relic-item",       filePath = "./assets/images/barrier_gem.png"},
+              {assetId = "statue-item",      filePath = "./assets/images/treasures/Treasure_pack_statues.png"},
+              {assetId = "key-item",         filePath = "./assets/images/treasures/Treasure_pack_keys.png"},
               {assetId = "portal-open",      filePath = "./assets/images/portal/End Portal/End Portal Open.png"},
               {assetId = "powerup-cloak",    filePath = "./assets/images/barrier_gem.png"},
               {assetId = "powerup-decoy",    filePath = "./assets/images/barrier_gem.png"},
@@ -58,6 +58,7 @@ scene = {
     },
     fonts = {
         [0] = {fontId = "press_start_24", filePath = "./assets/fonts/PressStart.ttf", fontSize = 24},
+              {fontId = "press_start_16", filePath = "./assets/fonts/PressStart.ttf", fontSize = 16},
     },
     keys = {
         [0] = {name = "UP",       key = 119},
@@ -69,7 +70,9 @@ scene = {
               {name = "USE_SLOT2", key = 50},
               {name = "USE_SLOT3", key = 51},
     },
-    buttons = {},
+    buttons = {
+        [0] = {name = "SHOOT", button = 1},
+    },
     entities = {
         -- === PAREDES PERIMETRALES (mapa 1024×1536) ===
         [0] = {
@@ -241,89 +244,101 @@ scene = {
             }
         },
 
-        -- Mimic 1 — disfrazado de reliquia, zona media
+        -- Mimic 1 — disfrazado de estatua, zona media
         {
             components = {
                 animation    = {num_frames = 1, speed_rate = 1, is_loop = false},
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "relic-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
                 transform    = {position = {x = 310.0, y = 690.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "mimic"},
                 script       = {path = "./assets/scripts/enemy_mimic.lua"},
             }
         },
-        -- Mimic 2 — disfrazado de reliquia, zona inferior
+        -- Mimic 2 — disfrazado de estatua, zona inferior
         {
             components = {
                 animation    = {num_frames = 1, speed_rate = 1, is_loop = false},
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "relic-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
                 transform    = {position = {x = 700.0, y = 1080.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "mimic"},
                 script       = {path = "./assets/scripts/enemy_mimic.lua"},
             }
         },
 
-        -- Golem Boss (Orc3) — centro del mapa, guarda la zona de reliquias
+        -- === VAMPIRE BOSS — guarda la llave, zona inferior central ===
         {
             components = {
-                animation    = {num_frames = 4, speed_rate = 7, is_loop = true},
-                box_collider = {width = 64, height = 88, offset = {x = 36, y = 12}},
-                health_bar   = {hp = 6, max_hp = 6},
+                animation    = {num_frames = 4, speed_rate = 6, is_loop = true},
+                box_collider = {width = 76, height = 108, offset = {x = 26, y = 10}},
+                health_bar   = {hp = 10, max_hp = 10},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "orc3-idle", width = 64, height = 64, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "vampire-idle", width = 64, height = 64, src_rect = {x = 0, y = 0}},
                 transform    = {position = {x = 450.0, y = 880.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "orc_boss"},
-                script       = {path = "./assets/scripts/enemy_orc_boss.lua"},
+                tag          = {tag = "vampire_boss"},
+                script       = {path = "./assets/scripts/vampire_boss.lua"},
             }
         },
 
-        -- === RELIQUIAS ===
-
-        -- Reliquia 1 — zona superior izquierda (fácil de encontrar)
+        -- === LLAVE (cerca del vampire boss, la obtiene el jugador al explorar) ===
         {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "relic-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "key-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                transform    = {position = {x = 480.0, y = 940.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
+                tag          = {tag = "key"},
+                script       = {path = "./assets/scripts/key.lua"},
+            }
+        },
+
+        -- === ESTATUAS (dan puntos al recolectar) ===
+
+        -- Estatua 1 — zona superior izquierda
+        {
+            components = {
+                box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
+                rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
                 transform    = {position = {x = 120.0, y = 350.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "relic"},
-                script       = {path = "./assets/scripts/relic.lua"},
+                tag          = {tag = "statue"},
+                script       = {path = "./assets/scripts/statue.lua"},
             }
         },
-        -- Reliquia 2 — zona media derecha
+        -- Estatua 2 — zona media derecha
         {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "relic-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
                 transform    = {position = {x = 860.0, y = 710.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "relic"},
-                script       = {path = "./assets/scripts/relic.lua"},
+                tag          = {tag = "statue"},
+                script       = {path = "./assets/scripts/statue.lua"},
             }
         },
-        -- Reliquia 3 — zona inferior izquierda
+        -- Estatua 3 — zona inferior izquierda
         {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "relic-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
                 transform    = {position = {x = 100.0, y = 1140.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "relic"},
-                script       = {path = "./assets/scripts/relic.lua"},
+                tag          = {tag = "statue"},
+                script       = {path = "./assets/scripts/statue.lua"},
             }
         },
-        -- Reliquia 4 — zona inferior derecha (cerca del portal)
+        -- Estatua 4 — zona inferior derecha (cerca del portal)
         {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "relic-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
                 transform    = {position = {x = 750.0, y = 1360.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "relic"},
-                script       = {path = "./assets/scripts/relic.lua"},
+                tag          = {tag = "statue"},
+                script       = {path = "./assets/scripts/statue.lua"},
             }
         },
 
@@ -376,12 +391,28 @@ scene = {
             }
         },
 
-        -- === HUD ===
+        -- === HUD: Score (top-right) ===
         {
             components = {
-                transform = {position = {x = 16.0, y = 16.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
-                text      = {text = "Score: 0", fontId = "press_start_24", r = 255, g = 255, b = 255, a = 255},
+                transform = {position = {x = 0.0, y = 14.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                text      = {text = "0", fontId = "press_start_24", r = 255, g = 255, b = 255, a = 255},
                 script    = {path = "./assets/scripts/hud.lua"},
+            }
+        },
+        -- === HUD: Key indicator (below HP bar, top-left) ===
+        {
+            components = {
+                transform = {position = {x = 14.0, y = 32.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                text      = {text = "", fontId = "press_start_16", r = 200, g = 200, b = 200, a = 255},
+                script    = {path = "./assets/scripts/hud_relics.lua"},
+            }
+        },
+        -- === HUD: Power-up indicator (bottom-left) ===
+        {
+            components = {
+                transform = {position = {x = 14.0, y = 570.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                text      = {text = "", fontId = "press_start_16", r = 100, g = 220, b = 255, a = 255},
+                script    = {path = "./assets/scripts/hud_powerup.lua"},
             }
         },
 
