@@ -21,4 +21,8 @@ scenes = {
         name = "game_over",
         path = "./assets/scripts/scene_game_over.lua"
     },
+    {
+        name = "victory",
+        path = "./assets/scripts/scene_victory.lua"
+    },
 }

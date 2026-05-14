@@ -1,43 +1,36 @@
 -- Pantalla Game Over
 
+play_music("./assets/audio/Jingle - Lose.ogg", false)
+
 scene = {
-    sprites = {},
+    sprites = {
+        [0] = {assetId = "defeat-bg", filePath = "./assets/images/ui/defeat_bg.png"},
+    },
     fonts = {
         [0] = {fontId = "press_start_32", filePath = "./assets/fonts/PressStart.ttf", fontSize = 32},
+              {fontId = "press_start_24", filePath = "./assets/fonts/PressStart.ttf", fontSize = 24},
               {fontId = "press_start_16", filePath = "./assets/fonts/PressStart.ttf", fontSize = 16},
     },
     keys   = {},
-    buttons = {
-        [0] = {name = "SHOOT", button = 1},
-    },
+    buttons = {},
     entities = {
-        -- ── "YOU DIED" ──────────────────────────────────────────────────────────
+        -- ── Fondo animado ────────────────────────────────────────────────────────
         [0] = {
             components = {
-                transform = {position = {x = 0.0, y = 160.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
-                text      = {text = "YOU DIED", fontId = "press_start_32",
-                             r = 200, g = 30, b = 30, a = 255},
-                script    = {path = "./assets/scripts/menu_center.lua"},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                sprite    = {assetId = "defeat-bg", width = 800, height = 600,
+                             src_rect = {x = 0, y = 0}, z_index = -1},
+                animation = {num_frames = 10, speed_rate = 8, is_loop = true},
+                script    = {path = "./assets/scripts/ui_bg_follow.lua"},
             }
         },
-        -- ── REINTENTAR ──────────────────────────────────────────────────────────
+
+        -- ── Press any key ────────────────────────────────────────────────────────
         {
             components = {
-                transform = {position = {x = 0.0, y = 320.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
-                text      = {text = "REINTENTAR", fontId = "press_start_16",
-                             r = 80, g = 215, b = 110, a = 255},
-                clickable = {},
-                script    = {path = "./assets/scripts/game_over_retry.lua"},
-            }
-        },
-        -- ── MENÚ PRINCIPAL ──────────────────────────────────────────────────────
-        {
-            components = {
-                transform = {position = {x = 0.0, y = 390.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
-                text      = {text = "MENU PRINCIPAL", fontId = "press_start_16",
-                             r = 190, g = 190, b = 190, a = 255},
-                clickable = {},
-                script    = {path = "./assets/scripts/game_over_menu.lua"},
+                transform = {position = {x = 0.0, y = 460.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+
+                script    = {path = "./assets/scripts/game_over_anykey.lua"},
             }
         },
     }

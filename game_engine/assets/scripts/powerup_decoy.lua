@@ -9,8 +9,10 @@ end
 function on_collision(other)
     if collected then return end
     if get_tag(other) == "player" then
-        collected  = true
-        has_decoy  = true
+        collected           = true
+        has_decoy           = true
+        powerup_hint_text   = "SENAL [2]"
+        powerup_hint_timer  = 3.0
         kill_entity(this)
     end
 end

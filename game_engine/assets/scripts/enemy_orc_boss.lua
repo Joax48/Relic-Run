@@ -73,21 +73,28 @@ function update(dt)
 
     -- Lunge al recibir daño
     if lunge_timer > 0 then
-        lunge_timer = lunge_timer - dt
-        local sx, sy = get_position(this)
-        local dx = player_cx - (sx + HALF)
-        local dy = player_cy - (sy + HALF)
-        local dist = math.sqrt(dx*dx + dy*dy)
-        if dist > 1 then
-            if math.abs(dx) > math.abs(dy) then
-                facing_x = dx > 0 and 1 or -1; facing_y = 0
-            else
-                facing_x = 0; facing_y = dy > 0 and 1 or -1
+        if player_invisible and not (decoy_active and decoy_x and decoy_y) then
+            lunge_timer = 0
+            set_velocity(this, 0, 0)
+        else
+            lunge_timer = lunge_timer - dt
+            local sx, sy = get_position(this)
+            local ltx = (decoy_active and decoy_x) or player_cx
+            local lty = (decoy_active and decoy_y) or player_cy
+            local dx = ltx - (sx + HALF)
+            local dy = lty - (sy + HALF)
+            local dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 1 then
+                if math.abs(dx) > math.abs(dy) then
+                    facing_x = dx > 0 and 1 or -1; facing_y = 0
+                else
+                    facing_x = 0; facing_y = dy > 0 and 1 or -1
+                end
+                local spd = (time_slow and 0.2 or 1.0) * LUNGE_SPEED
+                set_velocity(this, dx/dist * spd, dy/dist * spd)
             end
-            local spd = (time_slow and 0.2 or 1.0) * LUNGE_SPEED
-            set_velocity(this, dx/dist * spd, dy/dist * spd)
+            set_mode("run", get_row())
         end
-        set_mode("run", get_row())
         return
     end
 

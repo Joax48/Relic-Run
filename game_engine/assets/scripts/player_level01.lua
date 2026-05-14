@@ -106,12 +106,15 @@ function on_awake()
     player_invincible_timer = 0.0
     player_invisible        = false
     player_invisible_timer  = 0.0
+    cloak_cooldown          = 0
     decoy_active            = false
     decoy_timer             = 0.0
+    decoy_cooldown          = 0
     decoy_x                 = 0
     decoy_y                 = 0
     time_slow               = false
     timeslow_timer          = 0.0
+    timeslow_cooldown       = 0
 end
 
 function update(dt)
@@ -146,7 +149,7 @@ function update(dt)
             set_alpha(this, 255)
         end
     end
-    if is_action_activated("USE_SLOT1") and has_cloak
+    if is_action_just_pressed("USE_SLOT3") and has_cloak
        and not player_invisible and cloak_cooldown <= 0 then
         player_invisible       = true
         player_invisible_timer = CLOAK_DURATION
@@ -165,11 +168,16 @@ function update(dt)
         decoy_cooldown = decoy_cooldown - dt
         if decoy_cooldown < 0 then decoy_cooldown = 0 end
     end
-    if is_action_activated("USE_SLOT2") and has_decoy
-       and not decoy_active and decoy_cooldown <= 0 then
-        decoy_active = true
-        decoy_timer  = DECOY_DURATION
-        decoy_x, decoy_y = get_position(this)
+    if is_action_just_pressed("USE_SLOT1") and has_decoy then
+        if not decoy_active and (not decoy_cooldown or decoy_cooldown <= 0) then
+            decoy_active = true
+            decoy_timer  = DECOY_DURATION
+            -- lanzar el señuelo 150px adelante en la dirección que mira el jugador
+            local offset = 150
+            decoy_x = player_cx + facing_x * offset
+            decoy_y = player_cy + facing_y * offset
+            play_sfx("./assets/audio/effects/001_Hover_01.wav")
+        end
     end
 
     -- tiempo lento: cooldown y timer activo
@@ -185,7 +193,7 @@ function update(dt)
         timeslow_cooldown = timeslow_cooldown - dt
         if timeslow_cooldown < 0 then timeslow_cooldown = 0 end
     end
-    if is_action_activated("USE_SLOT3") and has_timeslow
+    if is_action_just_pressed("USE_SLOT2") and has_timeslow
        and not time_slow and timeslow_cooldown <= 0 then
         time_slow      = true
         timeslow_timer = TIMESLOW_DURATION
@@ -313,6 +321,18 @@ function update(dt)
         vx = vx * SPEED
         vy = vy * SPEED
     end
+
+    -- Clamp de posición: evitar salir del mapa
+    if map_w and map_h then
+        local px, py = get_position(this)
+        local min_x = -BODY_OX
+        local max_x = map_w - BODY_OX - BODY_W
+        local min_y = -BODY_OY
+        local max_y = map_h - BODY_OY - BODY_H
+        if (vx < 0 and px <= min_x) or (vx > 0 and px >= max_x) then vx = 0 end
+        if (vy < 0 and py <= min_y) or (vy > 0 and py >= max_y) then vy = 0 end
+    end
+
     set_velocity(this, vx, vy)
 end
 
@@ -370,7 +390,7 @@ function on_collision(other)
 
     if not player_invincible then
         if tag == "enemy_projectile" or tag == "slime" or
-           tag == "vampire" or tag == "vampire_boss" or tag == "orc" or tag == "orc_boss" or tag == "mimic" then
+           tag == "vampire" or tag == "vampire_boss" or tag == "orc" or tag == "orc_boss" or tag == "mimic" or tag == "dragon" then
             player_hp = player_hp - 1
             play_sfx("./assets/audio/effects/61_Hit_03.wav")
             player_invincible       = true

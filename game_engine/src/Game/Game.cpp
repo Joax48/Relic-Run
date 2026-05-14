@@ -112,6 +112,7 @@ void Game::SetUp() {
 // ─── ProcessInput ────────────────────────────────────────────────────────────
 
 void Game::ProcessInput() {
+    controllerManager->ResetJustPressed();
     SDL_Event sdlEvent;
     while (SDL_PollEvent(&sdlEvent)) {
         switch (sdlEvent.type) {
@@ -180,9 +181,7 @@ void Game::ProcessInput() {
             break;
 
         case SDL_MOUSEMOTION: {
-            int x, y;
-            SDL_GetMouseState(&x, &y);
-            controllerManager->SetMousePosition(x, y);
+            controllerManager->SetMousePosition(sdlEvent.motion.x, sdlEvent.motion.y);
             break;
         }
 

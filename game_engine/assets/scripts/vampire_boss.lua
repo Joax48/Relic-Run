@@ -9,7 +9,7 @@ local POINTS  = 150
 local DETECT_RANGE  = 450
 local FLEE_RANGE    = 160
 local MOVE_SPEED    = 70
-local PROJ_SPEED    = 260
+local PROJ_SPEED    = 160
 
 -- Timers fase 1
 local FAN_CD    = 5.0
@@ -33,10 +33,10 @@ local facing_x = 1
 local facing_y = 0
 
 local ANIM = {
-    idle   = {id = "vampire-idle",   frames = 4,  speed = 6},
-    walk   = {id = "vampire-walk",   frames = 6,  speed = 8},
-    attack = {id = "vampire-attack", frames = 12, speed = 16},
-    death  = {id = "vampire-death",  frames = 11, speed = 6},
+    idle   = {id = "vampire3-idle",   frames = 4,  speed = 6},
+    walk   = {id = "vampire3-walk",   frames = 6,  speed = 8},
+    attack = {id = "vampire3-attack", frames = 12, speed = 16},
+    death  = {id = "vampire3-death",  frames = 11, speed = 6},
 }
 
 local DEATH_DUR       = 11 / 6.0
@@ -48,10 +48,10 @@ local HALF = 64
 local OX, OY, BW, BH = 20, 10, 64, 88
 
 local function get_row()
-    if     facing_x == -1 then return 1
-    elseif facing_x ==  1 then return 2
-    elseif facing_y == -1 then return 3
-    else                        return 0
+    if     facing_x == -1 then return 2  -- West
+    elseif facing_x ==  1 then return 3  -- East
+    elseif facing_y == -1 then return 1  -- North
+    else                        return 0  -- South
     end
 end
 
@@ -133,11 +133,9 @@ function update(dt)
 
     local sx, sy = get_position(this)
 
-    -- Objetivo
+    -- Objetivo: señuelo confunde al boss (deja de atacar), jugador visible lo activa
     local tx, ty
-    if decoy_active and decoy_x and decoy_y then
-        tx, ty = decoy_x, decoy_y
-    elseif not player_invisible and player_cx then
+    if not decoy_active and not player_invisible and player_cx then
         tx, ty = player_cx, player_cy
     end
 

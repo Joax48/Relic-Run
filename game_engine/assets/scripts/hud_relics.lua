@@ -4,12 +4,7 @@ function on_awake()
 end
 
 function update(dt)
-    if key_collected then
-        set_text(this, "[KEY]")
-    else
-        set_text(this, "")
-    end
-    set_position(this, 14, 32)
+    set_text(this, "")
 end
 
 function on_collision(other)

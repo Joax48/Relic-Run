@@ -2,20 +2,32 @@
 
 game_current_level = "level_01"
 
-score            = 0
+score            = score or 0
+score_level_start = score
 relics_collected = 0
 relics_total     = 3
 key_collected    = false
-has_decoy        = false
+player_hp        = 5
+player_invisible = false
+-- Power-ups: el señuelo se desbloquea al entrar al nivel 1
+has_decoy        = true
 decoy_cooldown   = 0
 decoy_active     = false
 decoy_x          = 0
 decoy_y          = 0
+has_cloak        = has_cloak    or false
+cloak_cooldown   = 0
+has_timeslow     = has_timeslow or false
+timeslow_cooldown = 0
 time_slow        = false
-player_hp        = 5
+powerup_hint_text  = "SENAL [1] DESBLOQUEADO"
+powerup_hint_timer = 4.0
 
 -- Carga el mapa Tiled: bake de capas de tiles + muros de colisión del TMX
 -- (crea entidades antes que el scene table para que queden detrás en render order)
+map_w = 1024
+map_h = 1280
+
 play_music("./assets/audio/Field - The Little Warrior.ogg", true)
 load_map("./assets/maps/level_01.tmx")
 
@@ -55,6 +67,10 @@ scene = {
               {assetId = "key-item",         filePath = "./assets/images/treasures/Treasure_pack_keys.png"},
               {assetId = "portal-open",      filePath = "./assets/images/portal/End Portal/End Portal Open.png"},
               {assetId = "powerup-decoy",    filePath = "./assets/images/barrier_gem.png"},
+              -- HUD icons
+              {assetId = "icon-cloak",    filePath = "./assets/images/icons/1 Icons/7/Skill-icons_28.png"},
+              {assetId = "icon-decoy",    filePath = "./assets/images/icons/1 Icons/7/Skill-icons_35.png"},
+              {assetId = "icon-timeslow", filePath = "./assets/images/icons/1 Icons/7/Skill-icons_07.png"},
     },
     fonts = {
         [0] = {fontId = "press_start_24", filePath = "./assets/fonts/PressStart.ttf", fontSize = 24},
@@ -69,6 +85,7 @@ scene = {
               {name = "USE_SLOT1", key = 49},  -- 1
               {name = "USE_SLOT2", key = 50},  -- 2
               {name = "USE_SLOT3", key = 51},  -- 3
+              {name = "SHOOT",    key = 107}, -- K
     },
     buttons = {},
     entities = {
@@ -123,7 +140,7 @@ scene = {
                     src_rect = {x = 0, y = 0},
                 },
                 transform = {
-                    position = {x = 450.0, y = 900.0},
+                    position = {x = 239.0, y = 1178.0},
                     scale    = {x = 1.2,   y = 1.2},
                     rotation = 0.0,
                 },
@@ -133,6 +150,7 @@ scene = {
         },
         -- === ENEMIGOS ===
 
+        -- === ENEMIGOS ACTIVOS ===
         -- Slime cerca del portal (area derecha)
         {
             components = {
@@ -229,7 +247,7 @@ scene = {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 100.0, y = 600.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "relic"},
                 script       = {path = "./assets/scripts/statue.lua"},
@@ -240,7 +258,7 @@ scene = {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 350.0, y = 750.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "relic"},
                 script       = {path = "./assets/scripts/statue.lua"},
@@ -251,7 +269,7 @@ scene = {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 240.0, y = 80.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "relic"},
                 script       = {path = "./assets/scripts/statue.lua"},
@@ -269,23 +287,12 @@ scene = {
                 script       = {path = "./assets/scripts/portal.lua"},
             }
         },
-        -- Power-up: Orbe señuelo
-        {
-            components = {
-                box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
-                rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "powerup-decoy", width = 16, height = 16, src_rect = {x = 0, y = 0}},
-                transform    = {position = {x = 400.0, y = 1050.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "powerup_decoy"},
-                script       = {path = "./assets/scripts/powerup_decoy.lua"},
-            }
-        },
         -- Llave del nivel (cerca del boss, zona superior-izquierda)
         {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "key-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "key-item", width = 16, height = 16, src_rect = {x = 0, y = 32}},
                 transform    = {position = {x = 160.0, y = 180.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "key"},
                 script       = {path = "./assets/scripts/key.lua"},
@@ -307,12 +314,52 @@ scene = {
                 script    = {path = "./assets/scripts/hud_relics.lua"},
             }
         },
-        -- HUD: Power-up indicator (bottom-left, only when active)
+        -- HUD: cooldown text (encima de los íconos)
         {
             components = {
-                transform = {position = {x = 14.0, y = 570.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                transform = {position = {x = 10.0, y = 505.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
                 text      = {text = "", fontId = "press_start_16", r = 100, g = 220, b = 255, a = 255},
                 script    = {path = "./assets/scripts/hud_powerup.lua"},
+            }
+        },
+        -- HUD: ícono power-up Cloak (slot 1)
+        {
+            components = {
+                sprite    = {assetId = "icon-cloak", width = 32, height = 32, src_rect = {x = 0, y = 0}, z_index = 3},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                script    = {path = "./assets/scripts/hud_icon_cloak.lua"},
+            }
+        },
+        -- HUD: ícono power-up Decoy (slot 2)
+        {
+            components = {
+                sprite    = {assetId = "icon-decoy", width = 32, height = 32, src_rect = {x = 0, y = 0}, z_index = 3},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                script    = {path = "./assets/scripts/hud_icon_decoy.lua"},
+            }
+        },
+        -- HUD: ícono power-up TimeSlow (slot 3)
+        {
+            components = {
+                sprite    = {assetId = "icon-timeslow", width = 32, height = 32, src_rect = {x = 0, y = 0}, z_index = 3},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                script    = {path = "./assets/scripts/hud_icon_timeslow.lua"},
+            }
+        },
+        -- HUD: sprite de llave (aparece cuando se recoge)
+        {
+            components = {
+                sprite    = {assetId = "key-item", width = 16, height = 16, src_rect = {x = 0, y = 32}, z_index = 3},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
+                script    = {path = "./assets/scripts/hud_key_sprite.lua"},
+            }
+        },
+        -- HUD: hint de power-up (texto centrado, aparece al recoger)
+        {
+            components = {
+                transform = {position = {x = 400.0, y = 250.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                text      = {text = "", fontId = "press_start_16", r = 255, g = 220, b = 60, a = 255},
+                script    = {path = "./assets/scripts/hud_hint.lua"},
             }
         },
         -- Capa superior del mapa (árboles, techo, vallas) — z_index=2 → siempre encima

@@ -51,10 +51,15 @@ const MapLoader::TilesetInfo* MapLoader::FindTileset(int gid) const {
 static bool IsBottomLayer(const char* name) {
     if (!name) return true;
     static const char* bottom[] = {
+        // level_01 / level_02 (undead tileset)
         "Water", "Water Effect", "Ground", "Ground 2", "Rocks",
         "Bridge", "Elevated Space", "Stairs", "Ground Details",
         "Spots", "Plates", "Grass", "Grass2",
-        "Grass_Details6", "Grass_Detail3", "Grass_Detail5", nullptr
+        "Grass_Details6", "Grass_Detail3", "Grass_Detail5",
+        // level_03 (Flying Islands tileset)
+        "Background", "Floor", "Rocks_Flying", "Water_Highlights",
+        "Waterfall", "Clouds", "Clouds2", "Clouds3",
+        nullptr
     };
     for (int i = 0; bottom[i]; ++i)
         if (strcmp(name, bottom[i]) == 0) return true;
@@ -68,6 +73,8 @@ void MapLoader::LoadMap(const std::string& tmxPath,
                         std::unique_ptr<AssetManager>& assetManager,
                         SDL_Renderer* renderer,
                         int& outMapWidth, int& outMapHeight) {
+    tmxPath_ = tmxPath;
+
     tinyxml2::XMLDocument doc;
     if (doc.LoadFile(tmxPath.c_str()) != tinyxml2::XML_SUCCESS) {
         std::cerr << "[MAPLOADER] No se pudo cargar: " << tmxPath
@@ -93,21 +100,51 @@ void MapLoader::LoadMap(const std::string& tmxPath,
     // ── 1. Tilesets ───────────────────────────────────────────────────────────
     // For external .tsx files (no .tsx on disk), we hardcode image info
     // derived from known image dimensions ÷ tile size.
-    struct ExtFallback { int firstGid; const char* img; int cols; };
+    // mapHint: substring of tmxPath to prefer map-specific entries over generic ones.
+    struct ExtFallback { int firstGid; const char* img; int cols; const char* mapHint; };
     static const ExtFallback kExt[] = {
         // level_01
-        {2623, "ground_grass_details.png", 21},
-        {3001, "Trees_animation.png",      36},
-        {5341, "Interior.png",             14},
-        {5719, "house_details.png",        10},
+        {2623, "ground_grass_details.png", 21, "level_01"},
+        {3001, "Trees_animation.png",      36, "level_01"},
+        {5341, "Interior.png",             14, "level_01"},
+        {5719, "house_details.png",        10, "level_01"},
         // level_02
-        {1,    "Ground_rocks.png",         26},
-        {2263, "details.png",              40},
-        {2823, "Objects.png",              75},
-        {6423, "water_coasts.png",         23},
-        {7826, "Objects_animated.png",     44},
-        {9542, "water_detilazation.png",   37},
-        {0, nullptr, 0}
+        {1,    "Ground_rocks.png",         26, "level_02"},
+        {2263, "details.png",               40, "level_02"},
+        {2823, "Objects.png",               75, "level_02"},
+        {6423, "water_coasts.png",         23, "level_02"},
+        {7826, "Objects_animated.png",     44, "level_02"},
+        {9542, "water_detilazation.png",   37, "level_02"},
+        // level_03 (Flying Islands tileset) — files ending in _flying.png avoid
+        // collisions with level_02's same-named tilesets
+        {1,     "Flying_rocks_animation.png",   24, "level_03"},
+        {289,   "Ground_grass.png",             28, "level_03"},
+        {737,   "Objects_flying.png",           31, "level_03"},
+        {1112,  "Shadow_gradients.png",         21, "level_03"},
+        {1232,  "Statues_animation1.png",       60, "level_03"},
+        {1772,  "Statues_animation2.png",       19, "level_03"},
+        {1962,  "Tree_animation.png",           60, "level_03"},
+        {2562,  "Water_coasts.png",             29, "level_03"},
+        {2772,  "Water_coasts2.png",            29, "level_03"},
+        {2982,  "water_detilazation_flying.png",   37, "level_03"},
+        {3684,  "water_detilazation_v2_flying.png", 37, "level_03"},
+        {4386,  "water_detilazation_v2_flying.png", 37, "level_03"},
+        {7272,  "Waterfalls.png",               19, "level_03"},
+        {7569,  "Clouds.png",                   31, "level_03"},
+        {8034,  "Clouds_animated.png",          13, "level_03"},
+        {8294,  "Clouds_animated2.png",         13, "level_03"},
+        {8354,  "details_flying.png",           19, "level_03"},
+        {8381,  "flying_flower_animation.png",  24, "level_03"},
+        {13445, "Objects_flying.png",           31, "level_03"},
+        {16904, "Tree_animation.png",           60, "level_03"},
+        {17504, "Statues_animation1.png",       60, "level_03"},
+        {18044, "Statues_animation2.png",       19, "level_03"},
+        {18234, "Clouds.png",                   31, "level_03"},
+        {18699, "Clouds_animated.png",          13, "level_03"},
+        {18959, "Flying_rocks_animation.png",   24, "level_03"},
+        {19247, "flying_flower_animation.png",  24, "level_03"},
+        {19439, "details_flying.png",           19, "level_03"},
+        {0, nullptr, 0, nullptr}
     };
 
     for (auto* ts = mapElem->FirstChildElement("tileset"); ts;
@@ -116,10 +153,15 @@ void MapLoader::LoadMap(const std::string& tmxPath,
         int firstGid = ts->IntAttribute("firstgid");
 
         if (ts->Attribute("source")) {
-            // External .tsx — look for a fallback
+            // External .tsx — prefer map-specific entry, fall back to hint-less
             const ExtFallback* fb = nullptr;
-            for (int i = 0; kExt[i].img; ++i)
-                if (kExt[i].firstGid == firstGid) { fb = &kExt[i]; break; }
+            for (int i = 0; kExt[i].img; ++i) {
+                if (kExt[i].firstGid != firstGid) continue;
+                if (kExt[i].mapHint && tmxPath_.find(kExt[i].mapHint) != std::string::npos) {
+                    fb = &kExt[i]; break;
+                }
+                if (!kExt[i].mapHint && !fb) fb = &kExt[i];
+            }
 
             if (fb) {
                 std::string aid  = "tileset-" + std::string(fb->img);

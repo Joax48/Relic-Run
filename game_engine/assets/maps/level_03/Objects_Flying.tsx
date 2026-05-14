@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tileset version="1.10" tiledversion="1.12.1" name="Objects" tilewidth="32" tileheight="32" tilecount="375" columns="15">
+ <grid orientation="orthogonal" width="16" height="16"/>
+ <image source="../../images/tilesets/Objects_flying.png" width="496" height="800"/>
+</tileset>

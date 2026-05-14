@@ -39,7 +39,7 @@ end
 function on_collision(other)
     local tag = get_tag(other)
     if tag == "player" and active and not activating then
-        go_to_scene("main_menu")
+        go_to_scene("level_03")
     end
 end
 

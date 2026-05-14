@@ -5,7 +5,7 @@ local POINTS = 35
 local DETECT_RANGE = 280
 local FLEE_RANGE   = 130  -- keeps at least this distance from player
 local MOVE_SPEED   = 80
-local PROJ_SPEED   = 280
+local PROJ_SPEED   = 160
 local SHOOT_CD     = 1.8
 
 local dead        = false
@@ -30,10 +30,10 @@ local cur_row         = 0
 local anim_lock_timer = 0.0
 
 local function get_facing_row()
-    if facing_x == -1 then return 1
-    elseif facing_x == 1 then return 2
-    elseif facing_y == -1 then return 3
-    else return 0
+    if     facing_x == -1 then return 2  -- West
+    elseif facing_x ==  1 then return 3  -- East
+    elseif facing_y == -1 then return 1  -- North
+    else                        return 0  -- South
     end
 end
 
@@ -56,6 +56,7 @@ end
 
 function on_awake()
     shoot_timer = SHOOT_CD * math.random()
+    set_health(this, hp, HP)
 end
 
 function update(dt)
@@ -186,6 +187,7 @@ function on_collision(other)
 
     if tag == "projectile" or tag == "player_melee" then
         hp = hp - 1
+        set_health(this, hp, HP)
         if hp <= 0 then
             dead  = true
             dying = true

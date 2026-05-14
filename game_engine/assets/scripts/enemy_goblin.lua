@@ -24,6 +24,14 @@ local lunge_timer = 0.0
 local LUNGE_DUR   = 0.35
 local LUNGE_SPEED = 190
 
+local attack_cd       = 0.0
+local ATTACK_COOLDOWN = 0.8
+
+local wall_avoid_timer = 0.0
+local WALL_AVOID_DUR   = 0.5
+local wall_avoid_vx    = 0.0
+local wall_avoid_vy    = 0.0
+
 -- centro del sprite: 64×scale 1.2 / 2 = 38
 local HALF = 38
 -- collider: width=40 height=55 offset x=21 y=13
@@ -35,8 +43,8 @@ local patrol_timer         = 0.0
 
 local function get_row()
     if     facing_x == -1 then return 1
-    elseif facing_x ==  1 then return 2
-    elseif facing_y == -1 then return 3
+    elseif facing_x ==  1 then return 3
+    elseif facing_y == -1 then return 2
     else                        return 0
     end
 end
@@ -65,23 +73,43 @@ function update(dt)
     if dead then return end
 
     set_health(this, HP, MAX_HP)
+    if attack_cd > 0 then attack_cd = attack_cd - dt end
 
     if lunge_timer > 0 then
-        lunge_timer = lunge_timer - dt
-        local sx, sy = get_position(this)
-        local dx = player_cx - (sx + HALF)
-        local dy = player_cy - (sy + HALF)
-        local dist = math.sqrt(dx*dx + dy*dy)
-        if dist > 1 then
-            if math.abs(dx) > math.abs(dy) then
-                facing_x = dx > 0 and 1 or -1; facing_y = 0
-            else
-                facing_x = 0; facing_y = dy > 0 and 1 or -1
+        if player_invisible and not (decoy_active and decoy_x and decoy_y) then
+            lunge_timer = 0
+            set_velocity(this, 0, 0)
+        else
+            lunge_timer = lunge_timer - dt
+            local sx, sy = get_position(this)
+            local ltx = (decoy_active and decoy_x) or player_cx
+            local lty = (decoy_active and decoy_y) or player_cy
+            local dx = ltx - (sx + HALF)
+            local dy = lty - (sy + HALF)
+            local dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 1 then
+                if math.abs(dx) > math.abs(dy) then
+                    facing_x = dx > 0 and 1 or -1; facing_y = 0
+                else
+                    facing_x = 0; facing_y = dy > 0 and 1 or -1
+                end
+                local spd = (time_slow and 0.2 or 1.0) * LUNGE_SPEED
+                set_velocity(this, dx/dist * spd, dy/dist * spd)
             end
-            local spd = (time_slow and 0.2 or 1.0) * LUNGE_SPEED
-            set_velocity(this, dx/dist * spd, dy/dist * spd)
+            set_mode("attack", get_row())
         end
-        set_mode("attack", get_row())
+        return
+    end
+
+    if wall_avoid_timer > 0 then
+        wall_avoid_timer = wall_avoid_timer - dt
+        if math.abs(wall_avoid_vx) > math.abs(wall_avoid_vy) then
+            facing_x = wall_avoid_vx > 0 and 1 or -1; facing_y = 0
+        else
+            facing_x = 0; facing_y = wall_avoid_vy > 0 and 1 or -1
+        end
+        set_velocity(this, wall_avoid_vx, wall_avoid_vy)
+        set_mode("walk", get_row())
         return
     end
 
@@ -150,6 +178,10 @@ function update(dt)
     if dist < ATTACK_RANGE then
         set_velocity(this, 0, 0)
         set_mode("attack", row)
+        if attack_cd <= 0 then
+            lunge_timer = LUNGE_DUR
+            attack_cd   = ATTACK_COOLDOWN
+        end
     else
         set_velocity(this, dx / dist * CHASE_SPEED * mult, dy / dist * CHASE_SPEED * mult)
         set_mode("walk", row)
@@ -177,6 +209,16 @@ function on_collision(other)
             if pen_t < pen_b then set_position(this, sx, oy-OY-BH)
             else               set_position(this, sx, oy+oh-OY) end
             set_velocity(this, cvx, 0)
+        end
+        if lunge_timer <= 0 and wall_avoid_timer <= 0 then
+            wall_avoid_timer = WALL_AVOID_DUR
+            if math.abs(cvx) > math.abs(cvy) then
+                wall_avoid_vx = 0
+                wall_avoid_vy = (math.random() < 0.5 and 1 or -1) * CHASE_SPEED * 0.8
+            else
+                wall_avoid_vx = (math.random() < 0.5 and 1 or -1) * CHASE_SPEED * 0.8
+                wall_avoid_vy = 0
+            end
         end
         return
     end

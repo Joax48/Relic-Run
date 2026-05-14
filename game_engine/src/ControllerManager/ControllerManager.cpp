@@ -18,14 +18,34 @@ void ControllerManager::Clear() {
 void ControllerManager::AddActionKey(const std::string& action, int keyCode) {
     actionKeyName.emplace(action, keyCode);
     keyDown.emplace(keyCode, false);
-
+    keyJustPressed.emplace(keyCode, false);
 }
 
 void ControllerManager::KeyDown(int keyCode) {
+    anyKeyJustPressed = true;
     auto it = keyDown.find(keyCode);
     if (it != keyDown.end()) {
         keyDown[keyCode] = true;
+        keyJustPressed[keyCode] = true;
     }
+}
+
+bool ControllerManager::IsAnyKeyJustPressed() {
+    return anyKeyJustPressed;
+}
+
+void ControllerManager::ResetJustPressed() {
+    anyKeyJustPressed = false;
+    for (auto& [key, val] : keyJustPressed) val = false;
+}
+
+bool ControllerManager::IsActionJustPressed(const std::string& action) {
+    auto it = actionKeyName.find(action);
+    if (it != actionKeyName.end()) {
+        auto jt = keyJustPressed.find(it->second);
+        if (jt != keyJustPressed.end()) return jt->second;
+    }
+    return false;
 }
 
 void ControllerManager::KeyUp(int keyCode) {

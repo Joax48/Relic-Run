@@ -2,24 +2,32 @@
 
 game_current_level = "level_02"
 
-score             = 0
+score             = score or 0
+score_level_start = score
 relics_total      = 4
 relics_collected  = 0
 key_collected     = false
 player_hp         = 5
-has_cloak         = false
-cloak_cooldown    = 0
-has_decoy         = false
+player_invisible  = false
+-- Power-ups: tiempo lento se desbloquea al entrar al nivel 2
+has_decoy         = true
 decoy_cooldown    = 0
 decoy_active      = false
 decoy_x           = 0
 decoy_y           = 0
-has_timeslow      = false
+has_timeslow      = true
 timeslow_cooldown = 0
 time_slow         = false
+has_cloak         = has_cloak or false
+cloak_cooldown    = 0
+powerup_hint_text  = "TIEMPO [2] DESBLOQUEADO"
+powerup_hint_timer = 4.0
+
+map_w = 1024
+map_h = 1536
 
 play_music("./assets/audio/Field - The Little Warrior.ogg", true)
-load_map("./assets/maps/level_02.tmx")
+load_map("./assets/maps/level_02/level_02.tmx")
 
 scene = {
     sprites = {
@@ -42,6 +50,12 @@ scene = {
               {assetId = "vampire-attack", filePath = "./assets/images/vampire/PNG/Vampires1/Attack/Vampires1_Attack_full.png"},
               {assetId = "vampire-hurt",   filePath = "./assets/images/vampire/PNG/Vampires1/Hurt/Vampires1_Hurt_full.png"},
               {assetId = "vampire-death",  filePath = "./assets/images/vampire/PNG/Vampires1/Death/Vampires1_Death_full.png"},
+              -- Vampire3 (boss)
+              {assetId = "vampire3-idle",   filePath = "./assets/images/vampire/PNG/Vampires3/Idle/Vampires3_Idle_full.png"},
+              {assetId = "vampire3-walk",   filePath = "./assets/images/vampire/PNG/Vampires3/Walk/Vampires3_Walk_full.png"},
+              {assetId = "vampire3-attack", filePath = "./assets/images/vampire/PNG/Vampires3/Attack/Vampires3_Attack_full.png"},
+              {assetId = "vampire3-death",  filePath = "./assets/images/vampire/PNG/Vampires3/Death/Vampires3_Death_full.png"},
+              {assetId = "vampire3-hurt",   filePath = "./assets/images/vampire/PNG/Vampires3/Hurt/Vampires3_Hurt_full.png"},
               -- Orc enemy
               {assetId = "orc1-idle",   filePath = "./assets/images/orc/PNG/Orc1/Orc1_idle/orc1_idle_full.png"},
               {assetId = "orc1-walk",   filePath = "./assets/images/orc/PNG/Orc1/Orc1_walk/orc1_walk_full.png"},
@@ -55,6 +69,10 @@ scene = {
               {assetId = "powerup-cloak",    filePath = "./assets/images/barrier_gem.png"},
               {assetId = "powerup-decoy",    filePath = "./assets/images/barrier_gem.png"},
               {assetId = "powerup-timeslow", filePath = "./assets/images/barrier_gem.png"},
+              -- HUD icons
+              {assetId = "icon-cloak",    filePath = "./assets/images/icons/1 Icons/7/Skill-icons_28.png"},
+              {assetId = "icon-decoy",    filePath = "./assets/images/icons/1 Icons/7/Skill-icons_35.png"},
+              {assetId = "icon-timeslow", filePath = "./assets/images/icons/1 Icons/7/Skill-icons_07.png"},
     },
     fonts = {
         [0] = {fontId = "press_start_24", filePath = "./assets/fonts/PressStart.ttf", fontSize = 24},
@@ -69,10 +87,9 @@ scene = {
               {name = "USE_SLOT1", key = 49},
               {name = "USE_SLOT2", key = 50},
               {name = "USE_SLOT3", key = 51},
+              {name = "SHOOT",    key = 107}, -- K
     },
-    buttons = {
-        [0] = {name = "SHOOT", button = 1},
-    },
+    buttons = {},
     entities = {
         -- === PAREDES PERIMETRALES (mapa 1024×1536) ===
         [0] = {
@@ -115,7 +132,7 @@ scene = {
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
                 sprite       = {assetId = "portal-open", width = 320, height = 320, src_rect = {x = 0, y = 0}, z_index = 2},
                 animation    = {num_frames = 6, speed_rate = 10, is_loop = true},
-                transform    = {position = {x = 224.0, y = 60.0}, scale = {x = 0.2, y = 0.2}, rotation = 0.0},
+                transform    = {position = {x = 124.0, y = 5.0}, scale = {x = 0.2, y = 0.2}, rotation = 0.0},
                 tag          = {tag = "portal_entry"},
                 script       = {path = "./assets/scripts/portal_entry.lua"},
             }
@@ -124,7 +141,7 @@ scene = {
         -- === JUGADOR ===
         {
             components = {
-                transform    = {position = {x = 217.0, y = 160.0}, scale = {x = 1.2, y = 1.2}, rotation = 0.0},
+                transform    = {position = {x = 124.0, y = 60.0}, scale = {x = 1.2, y = 1.2}, rotation = 0.0},
                 sprite       = {assetId = "player-idle", width = 64, height = 64, src_rect = {x = 0, y = 0}},
                 animation    = {num_frames = 12, speed_rate = 6, is_loop = true},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
@@ -137,6 +154,7 @@ scene = {
 
         -- === ENEMIGOS ===
 
+        -- === ENEMIGOS ACTIVOS ===
         -- Slime 1 — zona superior derecha
         {
             components = {
@@ -176,7 +194,6 @@ scene = {
                 script       = {path = "./assets/scripts/enemy_slime.lua"},
             }
         },
-
         -- Vampiro 1 — zona media superior
         {
             components = {
@@ -203,7 +220,6 @@ scene = {
                 script       = {path = "./assets/scripts/enemy_vampire.lua"},
             }
         },
-
         -- Orc 1 — corredor izquierdo
         {
             components = {
@@ -243,14 +259,13 @@ scene = {
                 script       = {path = "./assets/scripts/enemy_orc.lua"},
             }
         },
-
         -- Mimic 1 — disfrazado de estatua, zona media
         {
             components = {
                 animation    = {num_frames = 1, speed_rate = 1, is_loop = false},
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 310.0, y = 690.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "mimic"},
                 script       = {path = "./assets/scripts/enemy_mimic.lua"},
@@ -262,13 +277,12 @@ scene = {
                 animation    = {num_frames = 1, speed_rate = 1, is_loop = false},
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 700.0, y = 1080.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "mimic"},
                 script       = {path = "./assets/scripts/enemy_mimic.lua"},
             }
         },
-
         -- === VAMPIRE BOSS — guarda la llave, zona inferior central ===
         {
             components = {
@@ -276,8 +290,8 @@ scene = {
                 box_collider = {width = 76, height = 108, offset = {x = 26, y = 10}},
                 health_bar   = {hp = 10, max_hp = 10},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "vampire-idle", width = 64, height = 64, src_rect = {x = 0, y = 0}},
-                transform    = {position = {x = 450.0, y = 880.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
+                sprite       = {assetId = "vampire3-idle", width = 64, height = 64, src_rect = {x = 0, y = 0}},
+                transform    = {position = {x = 250.0, y = 1080.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "vampire_boss"},
                 script       = {path = "./assets/scripts/vampire_boss.lua"},
             }
@@ -288,8 +302,8 @@ scene = {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "key-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
-                transform    = {position = {x = 480.0, y = 940.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
+                sprite       = {assetId = "key-item", width = 16, height = 16, src_rect = {x = 0, y = 32}},
+                transform    = {position = {x = 220.0, y = 1180.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "key"},
                 script       = {path = "./assets/scripts/key.lua"},
             }
@@ -302,7 +316,7 @@ scene = {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 120.0, y = 350.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "statue"},
                 script       = {path = "./assets/scripts/statue.lua"},
@@ -313,7 +327,7 @@ scene = {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 860.0, y = 710.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "statue"},
                 script       = {path = "./assets/scripts/statue.lua"},
@@ -324,7 +338,7 @@ scene = {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 100.0, y = 1140.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "statue"},
                 script       = {path = "./assets/scripts/statue.lua"},
@@ -335,46 +349,10 @@ scene = {
             components = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 0}},
+                sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
                 transform    = {position = {x = 750.0, y = 1360.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "statue"},
                 script       = {path = "./assets/scripts/statue.lua"},
-            }
-        },
-
-        -- === POWER-UPS ===
-
-        -- Capa de invisibilidad — zona media izquierda
-        {
-            components = {
-                box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
-                rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "powerup-cloak", width = 16, height = 16, src_rect = {x = 0, y = 0}},
-                transform    = {position = {x = 300.0, y = 1090.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "powerup_cloak"},
-                script       = {path = "./assets/scripts/powerup_cloak.lua"},
-            }
-        },
-        -- Orbe señuelo — zona superior derecha
-        {
-            components = {
-                box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
-                rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "powerup-decoy", width = 16, height = 16, src_rect = {x = 0, y = 0}},
-                transform    = {position = {x = 820.0, y = 440.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "powerup_decoy"},
-                script       = {path = "./assets/scripts/powerup_decoy.lua"},
-            }
-        },
-        -- Pergamino tiempo lento — zona inferior
-        {
-            components = {
-                box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
-                rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
-                sprite       = {assetId = "powerup-timeslow", width = 16, height = 16, src_rect = {x = 0, y = 0}},
-                transform    = {position = {x = 200.0, y = 1380.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
-                tag          = {tag = "powerup_timeslow"},
-                script       = {path = "./assets/scripts/powerup_timeslow.lua"},
             }
         },
 
@@ -407,15 +385,55 @@ scene = {
                 script    = {path = "./assets/scripts/hud_relics.lua"},
             }
         },
-        -- === HUD: Power-up indicator (bottom-left) ===
+        -- === HUD: cooldown text (encima de los íconos) ===
         {
             components = {
-                transform = {position = {x = 14.0, y = 570.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                transform = {position = {x = 10.0, y = 505.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
                 text      = {text = "", fontId = "press_start_16", r = 100, g = 220, b = 255, a = 255},
                 script    = {path = "./assets/scripts/hud_powerup.lua"},
             }
         },
+        -- HUD: ícono power-up Cloak (slot 1)
+        {
+            components = {
+                sprite    = {assetId = "icon-cloak", width = 32, height = 32, src_rect = {x = 0, y = 0}, z_index = 3},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                script    = {path = "./assets/scripts/hud_icon_cloak.lua"},
+            }
+        },
+        -- HUD: ícono power-up Decoy (slot 2)
+        {
+            components = {
+                sprite    = {assetId = "icon-decoy", width = 32, height = 32, src_rect = {x = 0, y = 0}, z_index = 3},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                script    = {path = "./assets/scripts/hud_icon_decoy.lua"},
+            }
+        },
+        -- HUD: ícono power-up TimeSlow (slot 3)
+        {
+            components = {
+                sprite    = {assetId = "icon-timeslow", width = 32, height = 32, src_rect = {x = 0, y = 0}, z_index = 3},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                script    = {path = "./assets/scripts/hud_icon_timeslow.lua"},
+            }
+        },
 
+        -- HUD: sprite de llave (aparece cuando se recoge)
+        {
+            components = {
+                sprite    = {assetId = "key-item", width = 16, height = 16, src_rect = {x = 0, y = 32}, z_index = 3},
+                transform = {position = {x = 0.0, y = 0.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
+                script    = {path = "./assets/scripts/hud_key_sprite.lua"},
+            }
+        },
+        -- HUD: hint de power-up (texto centrado, aparece al recoger)
+        {
+            components = {
+                transform = {position = {x = 400.0, y = 250.0}, scale = {x = 1.0, y = 1.0}, rotation = 0.0},
+                text      = {text = "", fontId = "press_start_16", r = 255, g = 220, b = 60, a = 255},
+                script    = {path = "./assets/scripts/hud_hint.lua"},
+            }
+        },
         -- === CAPA SUPERIOR DEL MAPA (árboles) — z_index=2 ===
         {
             components = {

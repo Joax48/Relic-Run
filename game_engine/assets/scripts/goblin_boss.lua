@@ -56,8 +56,8 @@ local patrol_timer         = 0.0
 
 local function get_row()
     if     facing_x == -1 then return 1
-    elseif facing_x ==  1 then return 2
-    elseif facing_y == -1 then return 3
+    elseif facing_x ==  1 then return 3
+    elseif facing_y == -1 then return 2
     else                        return 0
     end
 end
@@ -107,13 +107,12 @@ function update(dt)
 
     if not home_x then home_x = cx; home_y = cy end
 
-    -- Objetivo activo: señuelo > jugador visible
+    -- Objetivo activo: señuelo confunde al boss (patrulla), jugador visible lo persigue
     local tx, ty
-    if decoy_active and decoy_x and decoy_y then
-        tx, ty = decoy_x, decoy_y
-    elseif not player_invisible and player_cx then
+    if not decoy_active and not player_invisible and player_cx then
         tx, ty = player_cx, player_cy
     end
+    -- decoy_active → tx = nil → boss patrulla sin perseguir
 
     -- ─── WINDUP ───────────────────────────────────────────────
     if in_windup then

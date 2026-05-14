@@ -1,0 +1,36 @@
+# Doxyfile — Relic Run Game Engine
+
+PROJECT_NAME           = "Relic Run"
+PROJECT_BRIEF          = "Motor 2D top-down con ECS y scripting en Lua"
+PROJECT_NUMBER         = "1.0"
+OUTPUT_DIRECTORY       = docs
+OUTPUT_LANGUAGE        = Spanish
+
+INPUT                  = src
+FILE_PATTERNS          = *.hpp *.cpp *.h
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */libs/*
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+
+HAVE_DOT               = NO
+
+QUIET                  = YES
+WARNINGS               = YES
+
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+
+SHOW_INCLUDE_FILES     = YES
+SHOW_USED_FILES        = YES
+
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+
+ALPHABETICAL_INDEX     = YES

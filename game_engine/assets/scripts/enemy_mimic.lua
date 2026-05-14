@@ -42,7 +42,7 @@ function update(dt)
 
     if not revealed then
         set_velocity(this, 0, 0)
-        if player_cx and player_cy then
+        if player_cx and player_cy and not player_invisible then
             local sx, sy = get_position(this)
             local dx = player_cx - sx
             local dy = player_cy - sy
@@ -57,7 +57,7 @@ function update(dt)
     local tx, ty
     if decoy_active and decoy_x and decoy_y then
         tx, ty = decoy_x, decoy_y
-    elseif player_cx and player_cy then
+    elseif player_cx and player_cy and not player_invisible then
         tx, ty = player_cx, player_cy
     end
 

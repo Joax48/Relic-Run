@@ -1,10 +1,12 @@
 -- Menú principal — Relic Run
 
+score = 0
+
 play_music("./assets/audio/Theme - Magical Rainbow.ogg", true)
 
 scene = {
     sprites = {
-        [0] = {assetId = "menu-bg", filePath = "./assets/images/menu.png"},
+        [0] = {assetId = "menu-bg", filePath = "./assets/images/ui/menu_bg.png"},
     },
     fonts = {
         [0] = {fontId = "press_start_32", filePath = "./assets/fonts/PressStart.ttf", fontSize = 32},
@@ -16,15 +18,16 @@ scene = {
         [0] = {name = "SHOOT", button = 1},
     },
     entities = {
-        -- ── Fondo del menú ───────────────────────────────────────────────────
+        -- ── Fondo animado del menú ──────────────────────────────────────────────
         [0] = {
             components = {
-                -- menu.png es 1850×997 → escalar a 800×600
                 transform = {position = {x = 0.0, y = 0.0},
-                             scale    = {x = 800.0/1850.0, y = 600.0/997.0},
+                             scale    = {x = 1.0, y = 1.0},
                              rotation = 0.0},
-                sprite    = {assetId = "menu-bg", width = 1850, height = 997,
+                sprite    = {assetId = "menu-bg", width = 800, height = 600,
                              src_rect = {x = 0, y = 0}, z_index = -1},
+                animation = {num_frames = 10, speed_rate = 8, is_loop = true},
+                script    = {path = "./assets/scripts/ui_bg_follow.lua"},
             }
         },
         -- ── Botón START ─────────────────────────────────────────────────────
