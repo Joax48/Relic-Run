@@ -2027,7 +2027,7 @@
   </tile>
  </tileset>
  <tileset firstgid="12546" name="Water_coasts" tilewidth="16" tileheight="16" tilecount="899" columns="29">
-  <image source="../../images/tilesets/Water_coasts.png" width="464" height="496"/>
+  <image source="../../images/tilesets/Water_coasts_flying.png" width="464" height="496"/>
   <tile id="1">
    <animation>
     <frame tileid="1" duration="150"/>
