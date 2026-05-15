@@ -241,7 +241,7 @@ scene = {
                 health_bar   = {hp = 3, max_hp = 3},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
                 sprite       = {assetId = "orc1-idle", width = 64, height = 64, src_rect = {x = 0, y = 0}},
-                transform    = {position = {x = 700.0, y = 640.0}, scale = {x = 1.2, y = 1.2}, rotation = 0.0},
+                transform    = {position = {x = 200.0, y = 800.0}, scale = {x = 1.2, y = 1.2}, rotation = 0.0},
                 tag          = {tag = "orc"},
                 script       = {path = "./assets/scripts/enemy_orc.lua"},
             }
@@ -350,7 +350,7 @@ scene = {
                 box_collider = {width = 32, height = 32, offset = {x = 0, y = 0}},
                 rigid_body   = {is_dynamic = false, is_solid = false, mass = 1},
                 sprite       = {assetId = "statue-item", width = 16, height = 16, src_rect = {x = 0, y = 16}},
-                transform    = {position = {x = 750.0, y = 1360.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
+                transform    = {position = {x = 650.0, y = 1360.0}, scale = {x = 2.0, y = 2.0}, rotation = 0.0},
                 tag          = {tag = "statue"},
                 script       = {path = "./assets/scripts/statue.lua"},
             }
